@@ -1,0 +1,122 @@
+\documentclass{article}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+
+\begin{document}
+\title{The Autonomous Coordinate System}
+\author{Michael Peng}
+\date{October 2017}
+\maketitle
+
+\section{Introduction}
+The robot's ability to locate itself during the Autonomous Period in FTC is crucial to point scoring. The following are the specified point-scoring actions during it in \emph{Relic Recovery}.
+\begin{itemize}
+    \item Jewel-knocking
+    \item Storing glyph in correct or incorrect cryptobox
+    \item Parking in safe zone
+\end{itemize}
+All of these activities require precision in the robot's position and orientation. For this reason, the robot should have strong self-awareness regarding its positional relationship to key game elements.
+
+\subsection{This Solution}
+The primary goal of \emph{ACS} is to provide environmental awareness to the robot in a manner as independent as possible. In this solution, the only external factors on which it relies are the individual motor encoders in the drivetrain. Using these encoders, the robot can determine its relative position to the starting point.
+
+\section{Description}
+The \emph{ACS}, in operation, references an existing two-dimensional game map that illustrates a quadrant of the game arena, to which the robot's operations are limited. The implementation of this obstacle map involves coplanar point-to-point polygons that describe either a game obstacle or the map boundary. Additional named points, along with direction facing, describe robot positions in which game tasks can be performed. In the case of \emph{Relic Recovery}, for example, positions for the following tasks can be included:
+\begin{itemize}
+    \item Reading the cipher
+    \item Knocking off a jewel
+    \item Putting a glyph in each of three cryptobox columns
+\end{itemize}
+
+\section{Implementation}
+Although code for the robot controller is in Java, data structures in this document are in Python-like pseudocode for improved clarity.
+\emph{ACS} uses the following Java libraries:
+\begin{itemize}
+    \item \textbf{JTS Topology Suite} is an open source Java library for manipulating and creating vector geometry. JTS is necessary for its ability to help \emph{ACS} simulate the game environment geometrically and perform manipulations on individual elements.
+\end{itemize}
+
+\subsection{Data Structures}
+\subsubsection{Positions}
+
+\begin{verbatim}
+struct Position:
+  location: jts.Coordinate
+  orientation: angle in radians
+\end{verbatim}
+
+\subsubsection{Map}
+\begin{verbatim}
+struct GameMap:
+  obstacles: dict<str, jts.Polygon>
+  boundary: jts.Polygon
+  positions: dict<str, Position>
+\end{verbatim}
+
+\subsection{Key Functions}
+Pathfinding for the robot is done using the \emph{A*} algorithm for obstacle avoidance. Nodes are arranged in a grid with a distance of 1 inch in between; There is a path from each node to every node next to it, including diagonal ones. During path generation, if a node touches an obstacle or the map boundary, it cannot be used in the path.
+
+A specialization of A* for \emph{ACS} is as follows.
+
+\begin{algorithm}
+    \caption{Find path from $a$ to $b$}
+    \begin{algorithmic}[1]
+        \Procedure{A*}{$a,b$}
+            \State $f \gets \{[a, 0]\}$ \Comment{Priority queue: Frontier}
+            \State $p \gets \{a: \mathrm{nil}\}$ \Comment{Key-value map: Path}
+            \State $c \gets \{a: 0\}$ \Comment{Key-value map: Cost to node}
+            \While{$\#f>0$}
+                \State $s \gets $ pop item from $f$ \Comment{Coordinate: Current node}
+
+                \If{$s=b$}
+                    \State \Return \Call{Backtrack}{$s,a,p$} \Comment{From $s$ to $a$ in $p$}
+                \EndIf
+
+                \For{$n \gets$ \Call{Neighbors}{$s$}} \Comment{Coordinate: Next node}
+                    \State $o \gets c[s]+\Call{Cost}{s,n}$ \Comment{Real: Cost to next node}
+                    \If{$(n \notin c) \lor (o<c[n])$} \Comment{New cheapest cost to $n$}
+                        \State $c[n] \gets o$
+                        \State put $n$ into $f$ with priority $o+\Call{Heuristic}{b,n}$
+                        \State $p[n] \gets s$
+                    \EndIf
+                \EndFor
+            \EndWhile
+        \EndProcedure
+    \end{algorithmic}
+\end{algorithm}
+
+If the algorithm above were to be used with the result directly fed to the drivetrain manager, the robot would stop itself everytime a new node is reached. To alleviate this ineffiency, the following algorithm converts the steps into a collection of points that describe when the driving direction changes.
+
+\begin{algorithm}
+	\caption{Convert nodes $P$ to points $p$}
+	\begin{algorithmic}[1]
+		\Require $P$ to be an array of coordinates
+		\Procedure{ConvertPath}{$P$}
+			\State $l \gets (0,0)$ \Comment{Last vector}
+			\State $o \gets \emptyset$ \Comment{Output path (ORDERED)}
+			\For{$i$ \textbf{in} $[1,\#P)$} \Comment{Index}
+				\State $v \gets \overrightarrow{(P[i-1])(P[i])}$ \Comment{Current vector}
+				\If{$v \ne l$}
+					\State $o \gets o \cup \{P[i-1]\}$
+					\State $l \gets v$
+				\EndIf
+			\EndFor
+			\State \textbf{return} $o \cup \{P[\#P-1]\}$
+		\EndProcedure
+	\end{algorithmic}
+\end{algorithm}
+
+Consequently, the results from the above algorithm are converted to calls to the Drivetrain Manager in the following algorithm.
+
+\begin{algorithm}
+	\caption{Carry out navigation of points $p$}
+	\begin{algorithmic}[1]
+		\Require $p$ to be an array of coordinates
+		\Procedure{Navigate}{$p$}
+			\For{$i$ \textbf{in} $[1,\#p)$} \Comment{Index}
+				\State Drivetrain.move(\overrightarrow{(p[i-1])(p[i])})
+			\EndFor
+		\EndProcedure
+	\end{algorithmic}
+\end{algorithm}
+			
+\end{document}

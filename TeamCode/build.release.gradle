@@ -1,4 +1,11 @@
+repositories {
+    maven {
+        url 'https://repo.locationtech.org/content/repositories/jts-snapshots'
+    }
+}
+
 dependencies {
+    compile 'org.locationtech.jts:jts-core:1.15.0-SNAPSHOT'
     compile project(':FtcRobotController')
     compile (name: 'RobotCore-release', ext: 'aar')
     compile (name: 'Hardware-release', ext: 'aar')
