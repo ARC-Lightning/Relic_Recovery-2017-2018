@@ -57,12 +57,12 @@ Pathfinding for the robot is done using the \emph{A*} algorithm for obstacle avo
 
 A specialization of A* for \emph{ACS} is as follows.
 
-\begin{algorithm}
+\begin{algorithm}[H]
     \caption{Find path from $a$ to $b$}
     \begin{algorithmic}[1]
         \Procedure{A*}{$a,b$}
             \State $f \gets \{[a, 0]\}$ \Comment{Priority queue: Frontier}
-            \State $p \gets \{a: \mathrm{nil}\}$ \Comment{Key-value map: Path}
+            \State $p \gets \{a: \mathrm{\textbf{nil}}\}$ \Comment{Key-value map: Path}
             \State $c \gets \{a: 0\}$ \Comment{Key-value map: Cost to node}
             \While{$\#f>0$}
                 \State $s \gets $ pop item from $f$ \Comment{Coordinate: Current node}
@@ -71,11 +71,11 @@ A specialization of A* for \emph{ACS} is as follows.
                     \State \Return \Call{Backtrack}{$s,a,p$} \Comment{From $s$ to $a$ in $p$}
                 \EndIf
 
-                \For{$n \gets$ \Call{Neighbors}{$s$}} \Comment{Coordinate: Next node}
-                    \State $o \gets c[s]+\Call{Cost}{s,n}$ \Comment{Real: Cost to next node}
+                \For{$n \gets$ \Call{AdjacentPoints}{$s$}} \Comment{Coordinate: Next node}
+                    \State $o \gets c[s]+\Call{JTS.Distance}{s,n}$ \Comment{Real: Distance to next node}
                     \If{$(n \notin c) \lor (o<c[n])$} \Comment{New cheapest cost to $n$}
                         \State $c[n] \gets o$
-                        \State put $n$ into $f$ with priority $o+\Call{Heuristic}{b,n}$
+                        \State put $n$ into $f$ with priority $o+\Call{JTS.Distance}{b,n}$
                         \State $p[n] \gets s$
                     \EndIf
                 \EndFor
@@ -84,15 +84,15 @@ A specialization of A* for \emph{ACS} is as follows.
     \end{algorithmic}
 \end{algorithm}
 
-If the algorithm above were to be used with the result directly fed to the drivetrain manager, the robot would stop itself everytime a new node is reached. To alleviate this ineffiency, the following algorithm converts the steps into a collection of points that describe when the driving direction changes.
+ If the algorithm above were to be used with the result directly fed to the drivetrain manager, the robot would stop itself everytime a new node is reached. To alleviate this ineffiency, the following algorithm converts the steps into a multi-point path that describes when the driving direction changes.
 
-\begin{algorithm}
+\begin{algorithm}[H]
 	\caption{Convert nodes $P$ to points $p$}
 	\begin{algorithmic}[1]
 		\Require $P$ to be an array of coordinates
 		\Procedure{ConvertPath}{$P$}
 			\State $l \gets (0,0)$ \Comment{Last vector}
-			\State $o \gets \emptyset$ \Comment{Output path (ORDERED)}
+			\State $o \gets \emptyset$ \Comment{Output path array (REPEATABLE) (ORDERED)}
 			\For{$i$ \textbf{in} $[1,\#P)$} \Comment{Index}
 				\State $v \gets \overrightarrow{(P[i-1])(P[i])}$ \Comment{Current vector}
 				\If{$v \ne l$}
@@ -107,7 +107,7 @@ If the algorithm above were to be used with the result directly fed to the drive
 
 Consequently, the results from the above algorithm are converted to calls to the Drivetrain Manager in the following algorithm.
 
-\begin{algorithm}
+\begin{algorithm}[H]
 	\caption{Carry out navigation of points $p$}
 	\begin{algorithmic}[1]
 		\Require $p$ to be an array of coordinates

@@ -102,7 +102,7 @@ public interface IDrivetrain {
      * Ideal for Autonomous (LinearOpMode)
      *
      * @param vector The vector to move the robot in. See comment above for how it works.
-     * @param power The power, [0.0, 1.0], to set the motor(s) to.
+     * @param power The power, (0, 1], to set the motor(s) to.
      */
     void move(Vector2D vector, double power);
 
@@ -131,6 +131,21 @@ public interface IDrivetrain {
      * Sets the power of all drivetrain motors to 0, thus stopping the robot.
      */
     void stop();
+
+    /**
+     * Turns the robot in position for the given amount of radians (of change applied to the robot's
+     * orientation) at the default motor power.
+     * @param radians The amount of radians to rotate the robot for, [-2π, 2π]
+     */
+    void turn(double radians);
+
+    /**
+     * Turns the robot in position for the given amount of radians (of change applied to the robot's
+     * orientation) at the given motor power.
+     * @param radians The amount of radians to rotate the robot for, [-2π, 2π]
+     * @param power The power multiplier to set the motor to, (0, 1]
+     */
+    void turn(double radians, double power);
 
     /**
      * Gets the DcMotor object at the specified position relative to the robot.

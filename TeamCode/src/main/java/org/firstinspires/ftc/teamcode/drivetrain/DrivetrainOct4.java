@@ -228,6 +228,29 @@ public class DrivetrainOct4 implements IDrivetrain {
     }
 
     /**
+     * Turns the robot in position for the given amount of radians (of change applied to the robot's
+     * orientation) at the default motor power.
+     *
+     * @param radians The amount of radians to rotate the robot for, [-2π, 2π]
+     */
+    @Override
+    public void turn(double radians) {
+        // TODO stub
+    }
+
+    /**
+     * Turns the robot in position for the given amount of radians (of change applied to the robot's
+     * orientation) at the given motor power.
+     *
+     * @param radians The amount of radians to rotate the robot for, [-2π, 2π]
+     * @param power   The power multiplier to set the motor to, (0, 1]
+     */
+    @Override
+    public void turn(double radians, double power) {
+        // TODO stub
+    }
+
+    /**
      * Gets the DcMotor object at the specified position relative to the robot.
      *
      * @param ptr The motor's position relative to the robot
