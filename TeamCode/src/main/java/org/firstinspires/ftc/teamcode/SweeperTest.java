@@ -7,16 +7,20 @@ package org.firstinspires.ftc.teamcode;
 //import static java.lang.Thread.sleep;
 
 
-@TeleOp(name="SweeperTest", group ="Test")
+
 //@Disabled
 
-/*
+/**
  * Created by Joshua Krinsky :) on 10/11/2017.
  *
  * A basic test of the sweeper concept for picking up glyphs.
  * @author Joshua Krinsky
  * @author Michael Peng
+ * For team: Lightning (4410)
+ *
+ * FIRST - Gracious Professionalism
  */
+@TeleOp(name="SweeperTest", group ="Test")
 public class SweeperTest extends OpMode {
 
     private Servo RightSweeper;
