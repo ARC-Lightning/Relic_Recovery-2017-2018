@@ -6,7 +6,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 
 import org.firstinspires.ftc.teamcode.acs.GameMap;
 import org.firstinspires.ftc.teamcode.acs.IGameMap;
-import org.firstinspires.ftc.teamcode.drivetrain.DrivetrainOct4;
+import org.firstinspires.ftc.teamcode.drivetrain.Drivetrain;
 import org.firstinspires.ftc.teamcode.drivetrain.IDrivetrain;
 import org.firstinspires.ftc.teamcode.telemetry.ITelemetry;
 import org.firstinspires.ftc.teamcode.telemetry.Telemetry;
@@ -15,6 +15,16 @@ import java.util.HashMap;
 
 /**
  * The main LinearOpMode procedure in which autonomous operation is performed.
+ * Three actions that score points for us:
+ *  - Putting pre-loaded glyph into column
+ *    - The right column according to the VuMark
+ *  - Knocking off the right jewel
+ *  - Parking in the safe zone
+ *
+ * @author Michael Peng
+ * For team: 4410 (Lightning)
+ *
+ * FIRST - Gracious Professionalism
  */
 @Autonomous(name = "Autonomous Main", group = "Pragmaticos")
 public class AutoMain extends LinearOpMode {
@@ -65,7 +75,7 @@ public class AutoMain extends LinearOpMode {
         // Initialize drivetrain
         try {
             hardwareMap.dcMotor.get("FrontLeft");
-            drivetrain = new DrivetrainOct4(0.8, new HashMap<IDrivetrain.MotorPtr, DcMotor>() {{
+            drivetrain = new Drivetrain(0.8, new HashMap<IDrivetrain.MotorPtr, DcMotor>() {{
                 put(IDrivetrain.MotorPtr.FRONT_LEFT, hardwareMap.dcMotor.get("FrontLeft"));
                 put(IDrivetrain.MotorPtr.FRONT_RIGHT, hardwareMap.dcMotor.get("FrontRight"));
                 put(IDrivetrain.MotorPtr.REAR_LEFT, hardwareMap.dcMotor.get("RearLeft"));

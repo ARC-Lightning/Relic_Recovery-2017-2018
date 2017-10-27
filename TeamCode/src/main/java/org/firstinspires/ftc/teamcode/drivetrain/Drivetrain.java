@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.drivetrain;
 
 import com.qualcomm.robotcore.hardware.DcMotor;
+
 import org.locationtech.jts.math.Vector2D;
 
 import java.util.Arrays;
@@ -15,9 +16,7 @@ import java.util.Map;
  *
  * FIRST - Gracious Professionalism
  */
-public class DrivetrainOct4 implements IDrivetrain {
-    // CONFIGURATION
-    private final double TICKS_PER_INCH = 400;
+public class Drivetrain implements IDrivetrain {
     private final double TICKS_PER_ROTATION = 1440;
     // END CONFIGURATION
 
@@ -114,6 +113,7 @@ public class DrivetrainOct4 implements IDrivetrain {
     }
 
     private void setRelativeTargetPosition(DcMotor motor, double relativeInch) {
+        final double TICKS_PER_INCH = 400;
         final double relativeTicks = relativeInch * TICKS_PER_INCH;
         motor.setTargetPosition(motor.getCurrentPosition() + (int)Math.round(relativeTicks));
     }
@@ -128,7 +128,7 @@ public class DrivetrainOct4 implements IDrivetrain {
      */
     private Map<MotorPtr, DcMotor> motors;
 
-    public DrivetrainOct4(double power, Map<MotorPtr, DcMotor> motors) {
+    public Drivetrain(double power, Map<MotorPtr, DcMotor> motors) {
         this.powerSetting = power;
         this.motors = motors;
     }

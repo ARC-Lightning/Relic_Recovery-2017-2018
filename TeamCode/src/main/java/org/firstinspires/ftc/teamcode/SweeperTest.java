@@ -1,13 +1,8 @@
 package org.firstinspires.ftc.teamcode;
 
-        import com.qualcomm.robotcore.eventloop.opmode.OpMode;
-        import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-        import com.qualcomm.robotcore.hardware.Servo;
-
-//import static java.lang.Thread.sleep;
-
-
-
+import com.qualcomm.robotcore.eventloop.opmode.OpMode;
+import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.Servo;
 //@Disabled
 
 /**
@@ -20,7 +15,7 @@ package org.firstinspires.ftc.teamcode;
  *
  * FIRST - Gracious Professionalism
  */
-@TeleOp(name="SweeperTest", group ="Test")
+@TeleOp(name = "SweeperTest", group = "PragmaticosTest")
 public class SweeperTest extends OpMode {
 
     private Servo RightSweeper;
@@ -28,12 +23,15 @@ public class SweeperTest extends OpMode {
     private boolean isRightClamping = false;
     private boolean isLeftClamping = false;
 
+    private final double CLAMPED_POS = 0.3;
+
     public void init() {
         RightSweeper = hardwareMap.servo.get("RightSweeper");
         LeftSweeper = hardwareMap.servo.get("LeftSweeper");
         RightSweeper.setPosition(0);
         LeftSweeper.setPosition(0);
     }
+
     public void loop() {
         // Changelog update: October 18, 2017
         // The original logic that sets the servo to a position between 0 and 1 whenever the pressed
@@ -50,11 +48,11 @@ public class SweeperTest extends OpMode {
 
         if (isRightClamping != rightNewStatus) {
             isRightClamping = rightNewStatus;
-            updateSweeperStatus(RightSweeper, "Right sweeper", rightNewStatus);
+            updateSweeperStatus(RightSweeper, "Right sweeper", rightNewStatus, CLAMPED_POS);
         }
         if (isLeftClamping != leftNewStatus) {
             isLeftClamping = leftNewStatus;
-            updateSweeperStatus(LeftSweeper, "Left sweeper", leftNewStatus);
+            updateSweeperStatus(LeftSweeper, "Left sweeper", leftNewStatus, CLAMPED_POS);
         }
         telemetry.update();
 
@@ -89,10 +87,10 @@ public class SweeperTest extends OpMode {
      * @param sweeper The sweeper to set the position of
      * @param name The name of the given sweeper
      * @param newStatus The new status boolean that the servo should be in
+     * @param clamped The clamped position
      */
-    private void updateSweeperStatus(Servo sweeper, String name, boolean newStatus) {
-        final double CLAMPED_POS = 0.2;
-        sweeper.setPosition(newStatus ? CLAMPED_POS : 0);
-        telemetry.addData(name + " is now ", newStatus ? "Clamping" : "Relaxed");
+    private void updateSweeperStatus(Servo sweeper, String name, boolean newStatus, double clamped) {
+        sweeper.setPosition(newStatus ? clamped : 0);
+        telemetry.addData(name + " is now", newStatus ? "Clamping" : "Relaxed");
     }
 }
