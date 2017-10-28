@@ -8,8 +8,6 @@ import org.firstinspires.ftc.teamcode.acs.GameMap;
 import org.firstinspires.ftc.teamcode.acs.IGameMap;
 import org.firstinspires.ftc.teamcode.drivetrain.Drivetrain;
 import org.firstinspires.ftc.teamcode.drivetrain.IDrivetrain;
-import org.firstinspires.ftc.teamcode.telemetry.ITelemetry;
-import org.firstinspires.ftc.teamcode.telemetry.Telemetry;
 
 import java.util.HashMap;
 
