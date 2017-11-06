@@ -13,14 +13,14 @@ import org.firstinspires.ftc.teamcode.telemetry.ITelemetry
  *
  * @constructor Creates a clamp controller with the given servos
  */
-class GlyphClamp(var left: Servo, var right: Servo, val telem: ITelemetry) {
+class GlyphClamp(var leftServo: Servo, var rightServo: Servo, private val telem: ITelemetry) {
 
     // Constructor
     // Since the servos have the same orientation, one has to be reversed in order for the clamp to
     //   move symmetrically.
     init {
-        left.direction = Servo.Direction.FORWARD
-        right.direction = Servo.Direction.REVERSE
+        leftServo.direction = Servo.Direction.FORWARD
+        rightServo.direction = Servo.Direction.REVERSE
     }
 
     // Positions
@@ -37,23 +37,26 @@ class GlyphClamp(var left: Servo, var right: Servo, val telem: ITelemetry) {
     private var isLeftClamping: Boolean = false
     private var isRightClamping: Boolean = false
 
-    fun setLeftClamping(newStatus: Boolean): Boolean {
-        if (newStatus != this.isLeftClamping) {
-            this.left.position = if (newStatus) leftPositions.clamping else leftPositions.open
-            this.isLeftClamping = newStatus
-            telem.write("GlyphClamp", "Left clamp now ${if (newStatus) "clamping" else "relaxed"}")
-            return true
+    // Public getter/setter
+    // Usage example:
+    //   - Set: Use `clamp.leftArm = gamepad1.left_bumper`
+    //   - Query: Use `clamp.leftArm`
+    var leftArm: Boolean
+        get() = this.isLeftClamping
+        set(newStatus) {
+            if (newStatus != this.isLeftClamping) {
+                this.leftServo.position = if (newStatus) leftPositions.clamping else leftPositions.open
+                this.isLeftClamping = newStatus
+                telem.write("GlyphClamp", "Left clamp now ${if (newStatus) "clamping" else "relaxed"}")
+            }
         }
-        return false
-    }
-
-    fun setRightClamping(newStatus: Boolean): Boolean {
-        if (newStatus != this.isRightClamping) {
-            this.right.position = if (newStatus) rightPositions.clamping else rightPositions.open
-            this.isRightClamping = newStatus
-            telem.write("GlyphClamp", "Right clamp now ${if (newStatus) "clamping" else "relaxed"}")
-            return true
+    var rightArm: Boolean
+        get() = this.isRightClamping
+        set(newStatus) {
+            if (newStatus != this.isRightClamping) {
+                this.rightServo.position = if (newStatus) rightPositions.clamping else rightPositions.open
+                this.isRightClamping = newStatus
+                telem.write("GlyphClamp", "Right clamp now ${if (newStatus) "clamping" else "relaxed"}")
+            }
         }
-        return false
-    }
 }

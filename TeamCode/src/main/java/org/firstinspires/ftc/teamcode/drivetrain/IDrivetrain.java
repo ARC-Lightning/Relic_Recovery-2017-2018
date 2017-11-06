@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.drivetrain;
 
 import com.qualcomm.robotcore.hardware.DcMotor;
+
 import org.locationtech.jts.math.Vector2D;
 
 /**
@@ -20,7 +21,7 @@ public interface IDrivetrain {
         how a vector is represented mathematically. To understand this relationship, assume that the
         robot is at the origin on a four-quadrant 2D graph; The robot is facing up, or in the
         positive y direction. Moving forward is equivalent a directly upward vector, or `(0, 1)`. To
-        strafe in the rear-left direction, for example, use the vector `(-1, -1)`. Vectors have
+        strafe in the rear-leftServo direction, for example, use the vector `(-1, -1)`. Vectors have
         scale, so `-1 <= value <= 1` does not have to be true all the time. If the caller would like
         to move the robot a longer distance, just multiply the values.
 
@@ -38,7 +39,7 @@ public interface IDrivetrain {
         ## Motivation
 
         This system provides the flexibility that allows path-finding algorithms to manipulate
-        directions. For example, the forward and right vectors can be summed to produce the up-right
+        directions. For example, the forward and rightServo vectors can be summed to produce the up-rightServo
         diagonal vector.
 
         ## Synthetic Movements
@@ -46,7 +47,7 @@ public interface IDrivetrain {
         If you decide to send a vector like `(2, 1)` to the drivetrain manager, it will be broken
         down into two UNORDERED parts: `(1, 1)` and `(1, 0)`. Because the robot can only move in 8
         directions, any vector that is not a uniform scale of any vector in the list above gets
-        broken down into multiple motions. `(2, 1)` could make the robot move in the up-right
+        broken down into multiple motions. `(2, 1)` could make the robot move in the up-rightServo
         direction, stop, then move forward.
 
         **These vectors are discouraged because there is no guarantee for the order in which the
@@ -153,4 +154,10 @@ public interface IDrivetrain {
      * @return The DcMotor object representing the specified motor
      */
     DcMotor getMotor(MotorPtr ptr);
+
+    /**
+     * @return The default power that would be used when move(), turn(), etc. is called without
+     * a power value.
+     */
+    double getDefaultPower();
 }

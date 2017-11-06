@@ -9,7 +9,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * An implementation of IDrivetrain that was done solo on October 4, 2017.
+ * An implementation of IDrivetrain that was done on October 4, 2017.
  *
  * Created by: Michael Peng
  * For team: Lightning (4410)
@@ -206,7 +206,6 @@ public class Drivetrain implements IDrivetrain {
      * @param power     Power, [0.0, 1.0], to set the necessary motors to
      */
     public void startMove(Vector2D direction, double power) {
-        Map<MotorDiagonalPair, Integer> powers = this.getMotorPowerFromVector(direction);
 
         // Wait for existing operations to complete
         while (this.isBusy());
@@ -258,5 +257,9 @@ public class Drivetrain implements IDrivetrain {
      */
     public DcMotor getMotor(MotorPtr ptr) {
         return this.motors.get(ptr);
+    }
+
+    public double getDefaultPower() {
+        return this.powerSetting;
     }
 }

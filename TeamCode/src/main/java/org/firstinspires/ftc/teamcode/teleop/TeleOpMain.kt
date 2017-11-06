@@ -2,12 +2,7 @@ package org.firstinspires.ftc.teamcode.teleop
 
 import com.qualcomm.robotcore.eventloop.opmode.OpMode
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp
-import com.qualcomm.robotcore.hardware.Servo
-import org.firstinspires.ftc.teamcode.drivetrain.Drivetrain
-import org.firstinspires.ftc.teamcode.drivetrain.IDrivetrain
-import org.firstinspires.ftc.teamcode.io.GlyphClamp
-import org.firstinspires.ftc.teamcode.telemetry.ITelemetry
-import org.firstinspires.ftc.teamcode.telemetry.Telemetry
+import org.firstinspires.ftc.teamcode.io.Hardware
 
 /**
  * Main procedure for TeleOp during Relic Recovery.
@@ -32,64 +27,55 @@ class TeleOpMain : OpMode() {
         val motorPower = 0.7
     }
 
-    // Necessary Modules
-    private var drivetrain: IDrivetrain? = null
-    private var _telemetry: ITelemetry? = null
-    private var clamp: GlyphClamp? = null
-
-    // I/O Devices that are irrelevant to the drivetrain
-    private var leftClamp: Servo? = null
-    private var rightClamp: Servo? = null
+    private var bot: Hardware? = null
 
     override fun init() {
 
         // Initialize systems
-        if (booleanArrayOf(
-                initModules(),
-                initIO()
-        ).contains(false)) {
-            _telemetry?.fatal("Initialization has failed")
-            this.requestOpModeStop()
+        bot = Hardware.new(this, Config.motorPower)
+        if (bot == null) {
             return
         }
 
-        clamp = GlyphClamp(leftClamp!!, rightClamp!!, _telemetry!!)
     }
 
     override fun loop() {
 
-    }
-
-    fun initModules(): Boolean {
-        this._telemetry = Telemetry(this.telemetry)
-        try {
-            this.drivetrain = Drivetrain(Config.motorPower, mapOf(
-                    IDrivetrain.MotorPtr.FRONT_LEFT to hardwareMap.dcMotor.get("FrontLeft"),
-                    IDrivetrain.MotorPtr.FRONT_RIGHT to hardwareMap.dcMotor.get("FrontRight"),
-                    IDrivetrain.MotorPtr.REAR_LEFT to hardwareMap.dcMotor.get("RearLeft"),
-                    IDrivetrain.MotorPtr.REAR_RIGHT to hardwareMap.dcMotor.get("RearRight")
-            ))
-        } catch (exc: IllegalArgumentException) {
-            _telemetry?.fatal("(14) ${exc.message}")
-            return false
+        // Is init successful?
+        if (bot == null) {
+            telemetry.addData("--- FATAL", "ERROR ---")
+            telemetry.addData("Initialization", "unsuccessful")
+            telemetry.update()
+            this.requestOpModeStop()
+            return
         }
-        return true
-    }
 
-    fun initIO(): Boolean {
-        try {
-
-            // GlyphClamp servos
-            this.leftClamp = hardwareMap.servo.get("LeftClamp")
-            this.rightClamp = hardwareMap.servo.get("RightClamp")
-
-            // GlyphClampElevator servo
-            // TODO(waiting) Implementation of design
-
-        } catch (exc: IllegalArgumentException) {
-            _telemetry?.fatal("(14) ${exc.message}")
-            return false
+        // Gamepad mappings
+        with(bot!!) {
+            clamp.leftArm = getClampValue(clamp.leftArm, gamepad1.left_trigger > 0.3, gamepad1.left_bumper)
+            clamp.rightArm = getClampValue(clamp.rightArm, gamepad1.right_trigger > 0.3, gamepad1.right_bumper)
         }
-        return true
     }
+
+    /**
+     * Deduce the current desired status of a given servo given the bumper and trigger values.
+     *
+     * Truth table:
+     * Current  Retractor   Activator   RETURN VALUE
+     * T        T           T           T
+     * T        T           F           F
+     * T        F           T           T
+     * T        F           F           T
+     * F        T           T           F
+     * F        T           F           F
+     * F        F           T           T
+     * F        F           F           F
+     *
+     * @param current The current status of the servo, true for clamping
+     * @param retractor True if the corresponding un-clamping button is being triggered
+     * @param activator True if the corresponding clamping button is being triggered
+     * @return The new desired status of the servo
+     */
+    private fun getClampValue(current: Boolean, activator: Boolean, retractor: Boolean): Boolean =
+            current != (retractor != activator && current != activator)
 }

@@ -4,8 +4,6 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 
-import org.firstinspires.ftc.teamcode.acs.GameMap;
-import org.firstinspires.ftc.teamcode.acs.IGameMap;
 import org.firstinspires.ftc.teamcode.drivetrain.Drivetrain;
 import org.firstinspires.ftc.teamcode.drivetrain.IDrivetrain;
 
@@ -15,8 +13,8 @@ import java.util.HashMap;
  * The main LinearOpMode procedure in which autonomous operation is performed.
  * Three actions that score points for us:
  *  - Putting pre-loaded glyph into column
- *    - The right column according to the VuMark
- *  - Knocking off the right jewel
+ *    - The rightServo column according to the VuMark
+ *  - Knocking off the rightServo jewel
  *  - Parking in the safe zone
  *
  * @author Michael Peng
