@@ -1,0 +1,42 @@
+\documentclass{article}
+\usepackage{hyperref}
+% \usepackage{algorithm}
+% \usepackage{algpseudocode}
+
+\begin{document}
+\title{The Lightning Codebase}
+\author{FTC Team 4410 (Lightning)}
+\date{November 2017}
+\maketitle
+
+\begin{abstract}
+This is my abstract.
+\end{abstract}
+\section{Style and Language}
+
+\subsection{Kotlin}
+
+\subsubsection{Definition}
+Kotlin is a programming language that runs on the Java Virtual Machine (JVM) platform. It has been supported by Google as an official language for Android since May 2017. It offers cleaner and more concise syntax, support for multiple programming paradigms \textit{(such as functional)}, and is fully interoperable with Java. It is open source under the Apache 2.0 license. \href{https://developer.android.com/kotlin/index.html}{Click here for Google's introduction to Kotlin.}
+
+\subsubsection{Comparison with Java}
+% Discuss: lambdas, null safety!, string templates, singletons, data classes, operator overloading, collection mutability (and mutability in general)
+\begin{description}
+
+\item[Lambdas]
+Whereas Java offers Runnables as an equivalent to a lambda with no parameters or return values\footnote{Java 8 has been ignored because FTC's official Robot Controller repository uses Java 7.}, Kotlin offers full lambda support with parameters and implicit return values. This allows us to implement callback mappings in a readable, writable, and understandable way. For example, the \texttt{GamepadListener} class contains a \texttt{Map} from the \texttt{typealias} \texttt{GamepadProperty} to the \texttt{typealias} \texttt{GamepadRule}, both of which represent lambdas with a given set of input types. Lambdas are also extensively used in iterator transformations such as \texttt{map}, \texttt{filter}, and \texttt{reduce}. Kotlin's support for Lambdas makes implementations of these functions possible without third-party libraries, as opposed to the case in Java 7.
+
+\item[Null Safety]
+Types in Kotlin are non-nullable by default, whereas any non-primitive type in Java can be \texttt{null}. Although this does not bring exciting new features to our code, it encourages us to handle null cases when the type is declared to be nullable, preventing \texttt{NullPointerException}s.
+
+\item[Data Classes]
+Data classes in Kotlin were designed to address use cases where the only responsibility of a class is to hold data. It implicitly provides functions such as \texttt{equals()} and \texttt{toString()} that are specialized for data. It eliminates the getter/setter pattern in Java, which produces plenty of boilerplate code. Data classes are used for the \texttt{Position} data structure in ACS, which includes a two-dimensional coordinate and an orientation in radians. Before the conversion to Kotlin, getters and setters were implemented for each field, using up to 50 lines\footnote{Including documentation but without the header (JavaDoc before the class declaration)}. The converted code only needed 1 concise line.
+
+\end{description}
+
+There are many other delightful features in Kotlin compared to Java. \href{https://kotlinlang.org/docs/reference/idioms.html}{Click here for some common idioms in Kotlin.}
+
+\subsubsection{Low Entry Point}
+
+Kotlin is developed by JetBrains. The platform on which Android Studio is based on, IntelliJ, is also developed by JetBrains. JetBrains is known for superb language support in IDEs, and Kotlin is no exception. To ease the entry point for aspiring developers without Kotlin knowledge, 
+\end{document}

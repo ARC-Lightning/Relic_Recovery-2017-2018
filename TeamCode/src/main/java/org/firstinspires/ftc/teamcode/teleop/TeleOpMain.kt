@@ -34,48 +34,13 @@ class TeleOpMain : OpMode() {
         // Initialize systems
         bot = Hardware.new(this, Config.motorPower)
         if (bot == null) {
+            // The error is produce by Hardware itself, no telemetry necessary
             return
         }
 
     }
 
     override fun loop() {
-
-        // Is init successful?
-        if (bot == null) {
-            telemetry.addData("--- FATAL", "ERROR ---")
-            telemetry.addData("Initialization", "unsuccessful")
-            telemetry.update()
-            this.requestOpModeStop()
-            return
-        }
-
         // Gamepad mappings
-        with(bot!!) {
-            clamp.leftArm = getClampValue(clamp.leftArm, gamepad1.left_trigger > 0.3, gamepad1.left_bumper)
-            clamp.rightArm = getClampValue(clamp.rightArm, gamepad1.right_trigger > 0.3, gamepad1.right_bumper)
-        }
     }
-
-    /**
-     * Deduce the current desired status of a given servo given the bumper and trigger values.
-     *
-     * Truth table:
-     * Current  Retractor   Activator   RETURN VALUE
-     * T        T           T           T
-     * T        T           F           F
-     * T        F           T           T
-     * T        F           F           T
-     * F        T           T           F
-     * F        T           F           F
-     * F        F           T           T
-     * F        F           F           F
-     *
-     * @param current The current status of the servo, true for clamping
-     * @param retractor True if the corresponding un-clamping button is being triggered
-     * @param activator True if the corresponding clamping button is being triggered
-     * @return The new desired status of the servo
-     */
-    private fun getClampValue(current: Boolean, activator: Boolean, retractor: Boolean): Boolean =
-            current != (retractor != activator && current != activator)
 }

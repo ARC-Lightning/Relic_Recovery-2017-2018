@@ -16,7 +16,7 @@ import org.firstinspires.ftc.teamcode.telemetry.Telemetry
  *
  * FIRST - Gracious Professionalism
  */
-class Hardware(
+class Hardware internal constructor(
         val drivetrain: IDrivetrain,
         val telemetry: ITelemetry,
         val clamp: GlyphClamp) {
@@ -48,10 +48,12 @@ class Hardware(
                 // TODO(waiting) Ian's Implementation
 
                 // Grand finale
-                return Hardware(
+                val hw = Hardware(
                         drivetrain,
                         telemetry,
                         GlyphClamp(leftClamp, rightClamp, telemetry))
+                instance = hw
+                return hw
 
             } catch (exc: IllegalArgumentException) {
                 telemetry.fatal("(14) ${exc.message}")
@@ -60,5 +62,11 @@ class Hardware(
             }
         }
 
+        /**
+         * A singleton copy of the active hardware.
+         * This should never be referenced in "static" blocks, variable declarations, or any other
+         *   execution context before the init() of an OpMode (i.e. the creation of a Hardware instance)
+         */
+        var instance: Hardware? = null
     }
 }

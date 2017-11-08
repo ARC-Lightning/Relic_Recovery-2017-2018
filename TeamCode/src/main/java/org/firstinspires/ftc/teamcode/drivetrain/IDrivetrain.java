@@ -82,9 +82,9 @@ public interface IDrivetrain {
      */
     enum MotorPtr {
         FRONT_LEFT,         FRONT_RIGHT,
-        //       |          |
-        //       -- ROBOT! --
-        //       |          |
+        //       │          │
+        //       ├┤ ROBOT! ├┤
+        //       │          │
         REAR_LEFT,          REAR_RIGHT
     }
 

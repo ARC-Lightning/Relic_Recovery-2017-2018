@@ -41,6 +41,7 @@ class GamepadListener(val pad: Gamepad, val rules: List<GamepadRule>) {
      * NOTE: Should be called repeatedly (i.e. added to loop() or init_loop()) to catch gamepad changes.
      *
      */
+    // TODO(reminder) Add this to OpModes
     fun update() {
         fetchState()
                 .zip(this.state)
