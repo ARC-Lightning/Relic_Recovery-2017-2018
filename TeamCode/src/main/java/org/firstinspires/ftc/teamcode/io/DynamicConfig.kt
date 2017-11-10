@@ -35,16 +35,20 @@ object DynamicConfig {
          * All values should be in lambda form.
          */
         val mappings: List<GamepadRule> = listOf(
-                // Set team color
+                // Button X toggles team color
                 { pad: Gamepad -> pad.x } to { value ->
-                    if (value) team = TeamColor.oppositeOf(team)
-                    updateTelemetry("TeamColor", team)
+                    if (value) {
+                        team = TeamColor.oppositeOf(team)
+                        updateTelemetry("TeamColor", team)
+                    }
                 },
 
-                // Set starting position
+                // Button A toggles starting position
                 { pad: Gamepad -> pad.a } to { value ->
-                    if (value) isStartingLeft = !isStartingLeft
-                    updateTelemetry("Start position left side", isStartingLeft)
+                    if (value) {
+                        isStartingLeft = !isStartingLeft
+                        updateTelemetry("Start position is left", isStartingLeft)
+                    }
                 }
         )
     }

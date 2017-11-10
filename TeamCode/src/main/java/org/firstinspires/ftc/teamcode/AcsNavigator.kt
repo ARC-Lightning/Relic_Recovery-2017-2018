@@ -4,6 +4,7 @@ import org.firstinspires.ftc.teamcode.acs.GameMap
 import org.firstinspires.ftc.teamcode.acs.IGameMap
 import org.firstinspires.ftc.teamcode.acs.Position
 import org.firstinspires.ftc.teamcode.drivetrain.IDrivetrain
+import org.firstinspires.ftc.teamcode.io.DynamicConfig
 import org.firstinspires.ftc.teamcode.telemetry.ITelemetry
 import org.locationtech.jts.math.Vector2D
 
@@ -35,7 +36,6 @@ class AcsNavigator
 
     // CONFIGURATIONS
     companion object {
-        private val mapName = "TopLeft"
     }
 
     /**
@@ -52,9 +52,10 @@ class AcsNavigator
 
     init {
         // Try getting the map, throwing a fatal error if the name does not exist
+        val mapName = GameMap.getNameVisually(DynamicConfig.team, DynamicConfig.isStartingLeft)
         val mapOrNull = GameMap.getMapByName(mapName)
         if (mapOrNull == null) {
-            this.telemetry.fatal("Code error: There is no map by the name of '$mapName'")
+            this.telemetry.fatal("Code error: There is no map with name $mapName")
             throw RuntimeException("Code error")
         }
         this.map = mapOrNull
@@ -65,6 +66,8 @@ class AcsNavigator
     // -- IMPORTANT: When this navigator is active, no calls to the drivetrain (except turn()) shall be called
     // in the drivetrain. This will create a mismatch between where the robot thinks it is and where
     // it actually is.
+    // If turn() was to be called, though, it must return to its original orientation before this
+    //   navigator is called again
 
     @Throws(NoSuchFieldException::class)
     fun goToPosition(mapName: String, power: Double) {

@@ -1,8 +1,10 @@
 package org.firstinspires.ftc.teamcode.drivetrain
 
 import com.qualcomm.robotcore.hardware.DcMotor
+import com.qualcomm.robotcore.hardware.DcMotorSimple
+import com.qualcomm.robotcore.util.Range
+import org.locationtech.jts.algorithm.Angle
 import org.locationtech.jts.math.Vector2D
-import java.util.*
 
 /**
  * An implementation of IDrivetrain that was done on October 4, 2017.
@@ -22,9 +24,20 @@ class Drivetrain(
          */
         private val motors: Map<IDrivetrain.MotorPtr, DcMotor>) : IDrivetrain {
 
+    // Reverse the direction of motors on the right.
+    init {
+        forEachOf(
+                IDrivetrain.MotorPtr.FRONT_RIGHT,
+                IDrivetrain.MotorPtr.REAR_RIGHT
+        ) {
+            it.direction = DcMotorSimple.Direction.REVERSE
+        }
+    }
+
     // CONFIGURATION
     companion object {
         private val TICKS_PER_ROTATION = 1440.0
+        private val INCHES_PER_ROTATION = 0.8
         private val TICKS_PER_CIRCULAR_SPIN = TICKS_PER_ROTATION * 4
     }
     // END CONFIGURATION
@@ -36,12 +49,14 @@ class Drivetrain(
      *
      * @author Michael
      */
-    private enum class MotorDiagonalPair(ptr1: IDrivetrain.MotorPtr, ptr2: IDrivetrain.MotorPtr) {
-        RIGHT(IDrivetrain.MotorPtr.FRONT_LEFT, IDrivetrain.MotorPtr.REAR_RIGHT),
-        LEFT(IDrivetrain.MotorPtr.FRONT_RIGHT, IDrivetrain.MotorPtr.REAR_LEFT);
+    private enum class MotorDiagonalPair(val motors: Array<IDrivetrain.MotorPtr>,
+                                         val displayName: String) {
+        RIGHT(arrayOf(
+                IDrivetrain.MotorPtr.FRONT_LEFT, IDrivetrain.MotorPtr.REAR_RIGHT), "FL RR pair"),
+        LEFT(arrayOf(
+                IDrivetrain.MotorPtr.FRONT_RIGHT, IDrivetrain.MotorPtr.REAR_LEFT), "FR RL pair");
 
-        val motors: Array<IDrivetrain.MotorPtr> = arrayOf(ptr1, ptr2)
-
+        override fun toString(): String = displayName
     }
 
     /*
@@ -58,30 +73,28 @@ class Drivetrain(
 
     /**
      * Calculates a mapping from a diagonal pair of motors to their desired power multiplier from
-     * a vector from {@see VectorDirection}.
+     * any arbitrary vector.
      * @param vec The vector indicating the direction to go
      * @return A mapping from a diagonal pair of motors to their desired power multiplier
-     * @throws ArrayIndexOutOfBoundsException If the given vector was not from VectorDirection
      */
-    @Throws(ArrayIndexOutOfBoundsException::class)
+    // TODO test arbitrary vector support
     private fun getMotorPowerFromVector(vec: Vector2D): Map<MotorDiagonalPair, Int> {
+        val clone = vec.rotate(Angle.toRadians(315.0))
 
-        if (Math.abs(vec.x) > 1 || Math.abs(vec.y) > 1) {
-            throw ArrayIndexOutOfBoundsException(vec.toString())
-        }
+        // Since the input vector can be of any size, scaling to [-1,1] is necessary
+        val scale = Math.abs(maxOf(clone.x, clone.y))
+        val rightPower = clone.x / scale
+        val leftPower = clone.y / scale
 
-        val clone = Vector2D(vec)
-        clone.rotate(-45.0)
-
-        val output = HashMap<MotorDiagonalPair, Int>()
-        output.put(MotorDiagonalPair.RIGHT, Math.round(clone.x).toInt())
-        output.put(MotorDiagonalPair.LEFT, Math.round(clone.y).toInt())
-
-        return output
+        return mapOf(
+                MotorDiagonalPair.RIGHT to rightPower.toInt(),
+                MotorDiagonalPair.LEFT to leftPower.toInt()
+        )
     }
 
     /**
      * Turns the given vector into one that is in VectorDirection.
+     * Creates a clone.
      * @param vec The vector to be normalized
      * @return The normalized vector
      */
@@ -103,19 +116,46 @@ class Drivetrain(
 
     // Same as startMove(), except without mode setting. Universal across encoder and non-encoder.
     private fun setMotorPowers(direction: Vector2D, multiplier: Double) {
-        // For each motor, check which diagonal pair it's in; Then set the motor's power to the
-        // multiplier value corresponding to that diagonal pair in the `powers` map.
-        for ((ptr, motor) in this.motors) {
-            MotorDiagonalPair.values()
-                    .filter { it.motors.contains(ptr) }
-                    .forEach { motor.power = this.getMotorPowerFromVector(direction)[it]!! * multiplier }
-        }
+        // Grab the pair -> power map, then set the power of each motor in each pair to its mapped
+        // value.
+        getMotorPowerFromVector(direction).entries
+                // For each pair -> power entry
+                .forEach { mapping ->
+                    forEachOf(*mapping.key.motors) {
+                        it.power = mapping.value.toDouble() * multiplier
+                    }
+                }
     }
 
     private fun setRelativeTargetPosition(motor: DcMotor, relativeInch: Double) {
-        val TICKS_PER_INCH = 400.0
-        val relativeTicks = relativeInch * TICKS_PER_INCH
+        //      i in      IPR in    TPR tick
+        // t = ─────── / ─────── * ──────────
+        //        1        1 rot      1 rot
+        val relativeTicks = relativeInch / INCHES_PER_ROTATION * TICKS_PER_ROTATION
         motor.targetPosition = motor.currentPosition + Math.round(relativeTicks).toInt()
+    }
+
+    private fun normalizeRadian(radian_: Double): Double {
+        var radian: Double = radian_
+        // Until the radian is within range, make it closer to zero by leaps of 2pi.
+        while (radian > 2 * Math.PI || radian < -2 * Math.PI) {
+            radian += if (radian < 0)
+            // Add 2pi if radian negative
+                2 * Math.PI
+            else
+            // Subtract 2pi if radian positive
+                -2 * Math.PI
+        }
+        return radian
+    }
+
+    private fun forEachOf(vararg motors: IDrivetrain.MotorPtr, todo: (DcMotor) -> Unit) {
+        motors.map(this::getMotor).forEach(todo)
+    }
+
+    private fun setMotorMode(mode: DcMotor.RunMode) {
+        this.motors.values
+                .forEach { it.mode = mode }
     }
 
     /**
@@ -125,9 +165,7 @@ class Drivetrain(
      *
      * @param vector The vector to move the robot in. See comment above for how it works.
      */
-    override fun move(vector: Vector2D) {
-        this.move(vector, powerSetting)
-    }
+    override fun move(vector: Vector2D) = this.move(vector, powerSetting)
 
     /**
      * Moves the robot according to the specified vector in the specified power.
@@ -138,12 +176,11 @@ class Drivetrain(
      * @param power  The power, [0.0, 1.0], to set the motor(s) to.
      */
     override fun move(vector: Vector2D, power: Double) {
+        // TODO implement synthetic movement
         checkPower(power)
-        while (this.isBusy);
+        while (this.isBusy)
 
-        for (motor in this.motors.values) {
-            motor.mode = DcMotor.RunMode.RUN_USING_ENCODER
-        }
+            setMotorMode(DcMotor.RunMode.RUN_USING_ENCODER)
 
         val normalized = normalize(vector)
         val powers = getMotorPowerFromVector(normalized)
@@ -153,9 +190,7 @@ class Drivetrain(
                 setRelativeTargetPosition(this.motors[ptr]!!, powers[pair]!! * vector.length())
             }
         }
-        for (motor in this.motors.values) {
-            motor.mode = DcMotor.RunMode.RUN_TO_POSITION
-        }
+        setMotorMode(DcMotor.RunMode.RUN_TO_POSITION)
         setMotorPowers(normalized, power)
     }
 
@@ -164,18 +199,11 @@ class Drivetrain(
      *
      * @return True if any drivetrain motor is busy, otherwise false
      */
-    override fun isBusy(): Boolean {
-        for (motor in this.motors.values) {
-            if (motor.isBusy) {
-                return true
-            }
-        }
-        return false
-    }
+    override fun isBusy(): Boolean = this.motors.values.any { it.isBusy }
 
     /**
      * Starts moving the robot at the default speed according to the specified direction.
-     * NOTE: Is ineffective if motors are busy
+     * NOTE: Overrides existing power
      * Ideal for TeleOp (OpMode)
      *
      * @param direction A vector from and only from {@see VectorDirection}.
@@ -186,22 +214,14 @@ class Drivetrain(
 
     /**
      * Starts moving the robot at the given speed according to the specified direction.
-     * NOTE: Is ineffective if motors are busy
+     * NOTE: Overrides existing power
      * Ideal for TeleOp (OpMode)
      *
      * @param direction A vector from and only from {@see VectorDirection}.
      * @param power     Power, [0.0, 1.0], to set the necessary motors to
      */
     override fun startMove(direction: Vector2D, power: Double) {
-
-        // Cancel if motors are busy already
-        if (isBusy)
-            return
-
-        for (motor in motors.values) {
-            motor.mode = DcMotor.RunMode.RUN_WITHOUT_ENCODER
-        }
-
+        this.setMotorMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER)
         this.setMotorPowers(direction, power)
     }
 
@@ -220,9 +240,7 @@ class Drivetrain(
      *
      * @param radians The amount of radians to rotate the robot for, [-2π, 2π]
      */
-    override fun turn(radians: Double) {
-        // TODO stub
-    }
+    override fun turn(radians: Double) = turn(radians, powerSetting)
 
     /**
      * Turns the robot in position for the given amount of radians (of change applied to the robot's
@@ -232,10 +250,66 @@ class Drivetrain(
      * @param power   The power multiplier to set the motor to, (0, 1]
      */
     override fun turn(radians: Double, power: Double) {
-        // Turning has a special motor configuration
+        if (radians == 0.0)
+            return
 
+        // Turn the radians into relative ticks for one side of the drivetrain, then the other side
+        //   is the negation of that value.
+        var tickMagnitude = Math.round(Math.abs(normalizeRadian(radians)) / (2 * Math.PI) * TICKS_PER_CIRCULAR_SPIN)
+
+        // tickMagnitude is always applied to the right side because the unit circle is
+        //   counter-clockwise. If the input value is negative, then tickMagnitude shall be negated.
+        if (radians < 0.0)
+            tickMagnitude *= -1
+
+        forEachOf(
+                IDrivetrain.MotorPtr.FRONT_RIGHT,
+                IDrivetrain.MotorPtr.REAR_RIGHT
+        ) {
+            it.targetPosition = (it.currentPosition + tickMagnitude).toInt()
+            it.mode = DcMotor.RunMode.RUN_TO_POSITION
+            it.power = power
+        }
+
+        forEachOf(
+                IDrivetrain.MotorPtr.FRONT_LEFT,
+                IDrivetrain.MotorPtr.REAR_LEFT
+        ) {
+            it.targetPosition = (it.currentPosition - tickMagnitude).toInt()
+            it.mode = DcMotor.RunMode.RUN_TO_POSITION
+            it.power = power
+        }
     }
 
+    override fun startTurn(isCounterClockwise: Boolean) {
+        // Redundancy purposefully included to improve readability
+        if (isCounterClockwise)
+            startTurn(powerSetting)
+        else
+            startTurn(-powerSetting)
+    }
+
+    override fun startTurn(power_: Double) {
+        val power = Range.clip(power_, -1.0, 1.0)
+
+        forEachOf(
+                IDrivetrain.MotorPtr.FRONT_RIGHT,
+                IDrivetrain.MotorPtr.REAR_RIGHT
+        ) {
+
+            it.mode = DcMotor.RunMode.RUN_WITHOUT_ENCODER
+            it.power = power
+
+        }
+
+        forEachOf(
+                IDrivetrain.MotorPtr.FRONT_LEFT,
+                IDrivetrain.MotorPtr.REAR_LEFT
+        ) {
+            it.mode = DcMotor.RunMode.RUN_WITHOUT_ENCODER
+            it.power = -power
+        }
+    }
     /**
      * Gets the DcMotor object at the specified position relative to the robot.
      *

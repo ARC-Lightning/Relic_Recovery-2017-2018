@@ -41,8 +41,8 @@ class Hardware internal constructor(
                 val leftClamp = opMode.hardwareMap.servo.get("LeftClamp")
                 val rightClamp = opMode.hardwareMap.servo.get("RightClamp")
 
-                // GlyphClampElevator servo
-                // TODO(waiting) Implementation of design
+                // GlyphClampElevator motor
+                // val clampLift = opMode.hardwareMap.dcMotor.get("ClampLift")
 
                 // JewelKnocker
                 // TODO(waiting) Ian's Implementation
@@ -51,14 +51,14 @@ class Hardware internal constructor(
                 val hw = Hardware(
                         drivetrain,
                         telemetry,
-                        GlyphClamp(leftClamp, rightClamp, telemetry))
+                        GlyphClamp(leftClamp, rightClamp, null, telemetry))
                 instance = hw
                 return hw
 
-            } catch (exc: IllegalArgumentException) {
-                telemetry.fatal("(14) ${exc.message}")
+            } catch (exc: Exception) {
+                telemetry.fatal("Failed to initialize hardware: ${exc.message ?: "the robot, too, doesn't know why"}")
                 opMode.requestOpModeStop()
-                return null
+                throw RuntimeException(exc)
             }
         }
 

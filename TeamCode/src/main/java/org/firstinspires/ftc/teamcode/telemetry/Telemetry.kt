@@ -1,7 +1,5 @@
 package org.firstinspires.ftc.teamcode.telemetry
 
-import java.util.*
-
 /**
  * Defines the ways in which the other parts of the program can access the telemetry features.
  * Ideally, no direct access to the "telemetry" field in the OpMode classes should be permitted
@@ -64,7 +62,6 @@ interface ITelemetry {
  * @author Michael Peng
  */
 class Telemetry(private val telem: org.firstinspires.ftc.robotcore.external.Telemetry) : ITelemetry {
-    private val buffer = LinkedHashMap<String, Any>()
 
     init {
         this.telem.addData("Hello World", "Telemetry Initialized!")
@@ -72,40 +69,31 @@ class Telemetry(private val telem: org.firstinspires.ftc.robotcore.external.Tele
     }
 
     override fun write(caption: String, data: String) {
-        this.buffer.put(caption, data)
-        wrapUp()
+        this.telem.addData(caption, data)
     }
 
     override fun error(info: String) {
-        this.buffer.put("[ERROR]", info)
-        wrapUp()
+        this.telem.addData("[ERROR]", info)
     }
 
     override fun warning(info: String) {
-        this.buffer.put("[WARN]", info)
-        wrapUp()
+        this.telem.addData("[WARN]", info)
     }
 
     override fun data(label: String, data: Any) {
-        this.buffer.put("DATA: " + label, data)
-        wrapUp()
+        this.telem.addData("DATA: " + label, data)
     }
 
     override fun fatal(info: String) {
-        this.buffer.put("--- FATAL ", " ERROR ---")
-        this.buffer.put("Error Info", info)
-        wrapUp()
+        this.telem.addData("--- FATAL ", " ERROR ---")
+        this.telem.addData("Error Info", info)
     }
 
     override fun clear() {
-        this.buffer.clear()
         wrapUp()
     }
 
     private fun wrapUp() {
-        for ((key, value) in this.buffer) {
-            telem.addData(key, value)
-        }
         telem.update()
     }
 }

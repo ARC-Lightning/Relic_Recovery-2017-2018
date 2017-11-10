@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.io
 
+import com.qualcomm.robotcore.hardware.DcMotor
 import com.qualcomm.robotcore.hardware.Servo
 import org.firstinspires.ftc.teamcode.telemetry.ITelemetry
 
@@ -13,30 +14,33 @@ import org.firstinspires.ftc.teamcode.telemetry.ITelemetry
  *
  * @constructor Creates a clamp controller with the given servos
  */
-class GlyphClamp(var leftServo: Servo, var rightServo: Servo, private val telem: ITelemetry) {
-
-    // Constructor
-    // Since the servos have the same orientation, one has to be reversed in order for the clamp to
-    //   move symmetrically.
-    init {
-        leftServo.direction = Servo.Direction.FORWARD
-        rightServo.direction = Servo.Direction.REVERSE
-    }
+class GlyphClamp(
+        var leftServo: Servo,
+        var rightServo: Servo,
+        var lift: DcMotor?,
+        private val telem: ITelemetry) {
 
     // Positions
     private val leftPositions = object {
         val open = 0.0
-        val clamping = 0.25
+        val clamping = 0.2
     }
     private val rightPositions = object {
-        val open = 0.6
-        val clamping = 0.85
+        val open = 1.0
+        val clamping = 0.8
+    }
+
+    // Reset when initializing
+    init {
+        leftServo.position = leftPositions.open
+        rightServo.position = rightPositions.open
     }
 
     // Store the status on our own so we do not flood the servo with getPosition requests
     private var isLeftClamping: Boolean = false
     private var isRightClamping: Boolean = false
 
+    // True if clamping
     // Public getter/setter
     // Usage example:
     //   - Set: Use `clamp.leftArm = gamepad1.left_bumper`
@@ -58,5 +62,12 @@ class GlyphClamp(var leftServo: Servo, var rightServo: Servo, private val telem:
                 this.isRightClamping = newStatus
                 telem.write("GlyphClamp", "Right clamp now ${if (newStatus) "clamping" else "relaxed"}")
             }
+        }
+
+    // In TeleOp's mappings, simply use `clamp.liftPower = gamepad1.stick_left_y` or similar
+    var liftPower: Double
+        get() = this.lift!!.power
+        set(newPower) {
+            this.lift!!.power = newPower
         }
 }

@@ -81,11 +81,18 @@ public interface IDrivetrain {
      * This is useful for directly sending commands to the individual motors.
      */
     enum MotorPtr {
-        FRONT_LEFT,         FRONT_RIGHT,
-        //       │          │
-        //       ├┤ ROBOT! ├┤
-        //       │          │
-        REAR_LEFT,          REAR_RIGHT
+        FRONT_LEFT(true, true), FRONT_RIGHT(true, false),
+        //       │              │
+        //       ├─── ROBOT! ───┤
+        //       │              │
+        REAR_LEFT(false, true), REAR_RIGHT(false, false);
+
+        public boolean isFront, isLeft;
+
+        MotorPtr(boolean isFront, boolean isLeft) {
+            this.isFront = isFront;
+            this.isLeft = isLeft;
+        }
     }
 
     /**
@@ -136,6 +143,7 @@ public interface IDrivetrain {
     /**
      * Turns the robot in position for the given amount of radians (of change applied to the robot's
      * orientation) at the default motor power.
+     * Ideal for Autonomous
      * @param radians The amount of radians to rotate the robot for, [-2π, 2π]
      */
     void turn(double radians);
@@ -143,10 +151,26 @@ public interface IDrivetrain {
     /**
      * Turns the robot in position for the given amount of radians (of change applied to the robot's
      * orientation) at the given motor power.
+     * Ideal for Autonomous
      * @param radians The amount of radians to rotate the robot for, [-2π, 2π]
      * @param power The power multiplier to set the motor to, (0, 1]
      */
     void turn(double radians, double power);
+
+    /**
+     * Starts rotating the robot in place in the given direction.
+     *
+     * @param isCounterClockwise true if counter-clockwise rotation desired
+     */
+    void startTurn(boolean isCounterClockwise);
+
+    /**
+     * Starts rotating the robot in place with the given power multiplier for motors.
+     * A positive given power value will cause the robot to rotate counter-clockwise.
+     *
+     * @param power The power multiplier, [-1, 1]
+     */
+    void startTurn(double power);
 
     /**
      * Gets the DcMotor object at the specified position relative to the robot.
