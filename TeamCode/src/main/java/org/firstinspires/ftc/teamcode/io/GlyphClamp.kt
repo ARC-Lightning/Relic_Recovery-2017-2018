@@ -17,7 +17,7 @@ import org.firstinspires.ftc.teamcode.telemetry.ITelemetry
 class GlyphClamp(
         var leftServo: Servo,
         var rightServo: Servo,
-        var lift: DcMotor?,
+        var lift: DcMotor,
         private val telem: ITelemetry) {
 
     // Positions
@@ -34,6 +34,7 @@ class GlyphClamp(
     init {
         leftServo.position = leftPositions.open
         rightServo.position = rightPositions.open
+        lift.zeroPowerBehavior = DcMotor.ZeroPowerBehavior.BRAKE
     }
 
     // Store the status on our own so we do not flood the servo with getPosition requests
@@ -66,8 +67,8 @@ class GlyphClamp(
 
     // In TeleOp's mappings, simply use `clamp.liftPower = gamepad1.stick_left_y` or similar
     var liftPower: Double
-        get() = this.lift!!.power
+        get() = this.lift.power
         set(newPower) {
-            this.lift!!.power = newPower
+            this.lift.power = newPower
         }
 }

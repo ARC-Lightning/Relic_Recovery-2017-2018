@@ -42,7 +42,7 @@ class Hardware internal constructor(
                 val rightClamp = opMode.hardwareMap.servo.get("RightClamp")
 
                 // GlyphClampElevator motor
-                // val clampLift = opMode.hardwareMap.dcMotor.get("ClampLift")
+                val clampLift = opMode.hardwareMap.dcMotor.get("ClampLift")
 
                 // JewelKnocker
                 // TODO(waiting) Ian's Implementation
@@ -51,7 +51,7 @@ class Hardware internal constructor(
                 val hw = Hardware(
                         drivetrain,
                         telemetry,
-                        GlyphClamp(leftClamp, rightClamp, null, telemetry))
+                        GlyphClamp(leftClamp, rightClamp, clampLift, telemetry))
                 instance = hw
                 return hw
 

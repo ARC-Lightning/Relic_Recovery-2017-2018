@@ -74,11 +74,13 @@ class AcsNavigator
         val target = this.map.getPosition(mapName) ?:
                 throw NoSuchFieldException("Position '$mapName' does not exist")
 
-        val driveVector = Vector2D(this.currentPos.location, target.location)
+        val driveVector = Vector2D(currentPos.location, target.location)
 
-        this.drivetrain.turn(-this.currentPos.orientation, power)
-        this.drivetrain.move(driveVector, power)
-        this.drivetrain.turn(target.orientation, power)
+        with(this.drivetrain) {
+            turn(-currentPos.orientation, power)
+            move(driveVector, power)
+            turn(target.orientation, power)
+        }
     }
 
     @Throws(NoSuchFieldException::class)

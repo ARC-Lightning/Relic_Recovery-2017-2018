@@ -69,6 +69,10 @@ class Drivetrain(
         (-1, -1) -> (-1, 0) y+1 LEFT-BWD
         (-1, 0) -> (-1, 1) y+1 LEFT
         (-1, 1) -> (0, 1) x+1 LEFT-FWD
+
+        Conclusion: a 45-degree clockwise rotation will convert an input vector to a vector where
+          the x value is the relative target position for the RIGHT pair and the y value is the <...>
+          for the LEFT pair.
      */
 
     /**
@@ -77,18 +81,32 @@ class Drivetrain(
      * @param vec The vector indicating the direction to go
      * @return A mapping from a diagonal pair of motors to their desired power multiplier
      */
-    // TODO test arbitrary vector support
-    private fun getMotorPowerFromVector(vec: Vector2D): Map<MotorDiagonalPair, Int> {
+    private fun getMotorPowerFromVector(vec: Vector2D): Map<MotorDiagonalPair, Double> {
         val clone = vec.rotate(Angle.toRadians(315.0))
 
-        // Since the input vector can be of any size, scaling to [-1,1] is necessary
-        val scale = Math.abs(maxOf(clone.x, clone.y))
+        val scale = maxOf(Math.abs(clone.x), Math.abs(clone.y))
         val rightPower = clone.x / scale
         val leftPower = clone.y / scale
 
         return mapOf(
-                MotorDiagonalPair.RIGHT to rightPower.toInt(),
-                MotorDiagonalPair.LEFT to leftPower.toInt()
+                MotorDiagonalPair.RIGHT to rightPower,
+                MotorDiagonalPair.LEFT to leftPower
+        )
+    }
+
+    /**
+     * Converts a direction in which the caller wishes to travel to a mapping from diagonal pair to
+     *   that pair's desired target position in inches.
+     *
+     *  @param direction A vector from the robot to the target position where the robot is at (0,0)
+     *  @return A mapping from a diagonal pair to its desired relative position in inches
+     */
+    private fun directionToRelativeTargets(direction: Vector2D): Map<MotorDiagonalPair, Double> {
+        val positions = direction.rotate(Angle.toRadians(315.0))
+
+        return mapOf(
+                MotorDiagonalPair.RIGHT to positions.x,
+                MotorDiagonalPair.LEFT to positions.y
         )
     }
 
@@ -122,7 +140,7 @@ class Drivetrain(
                 // For each pair -> power entry
                 .forEach { mapping ->
                     forEachOf(*mapping.key.motors) {
-                        it.power = mapping.value.toDouble() * multiplier
+                        it.power = mapping.value * multiplier
                     }
                 }
     }
@@ -176,22 +194,24 @@ class Drivetrain(
      * @param power  The power, [0.0, 1.0], to set the motor(s) to.
      */
     override fun move(vector: Vector2D, power: Double) {
-        // TODO implement synthetic movement
+        // TODO test synthetic movement
         checkPower(power)
-        while (this.isBusy)
+        while (this.isBusy);
 
-            setMotorMode(DcMotor.RunMode.RUN_USING_ENCODER)
+        // Vector with endpoint congruent to origin means no movement
+        if (vector.x == 0.0 && vector.y == 0.0)
+            return
 
-        val normalized = normalize(vector)
-        val powers = getMotorPowerFromVector(normalized)
+        setMotorMode(DcMotor.RunMode.RUN_USING_ENCODER)
 
-        for (pair in MotorDiagonalPair.values()) {
-            for (ptr in pair.motors) {
-                setRelativeTargetPosition(this.motors[ptr]!!, powers[pair]!! * vector.length())
+        directionToRelativeTargets(vector).forEach { (pair, position) ->
+            pair.motors.forEach {
+                setRelativeTargetPosition(getMotor(it), position)
             }
         }
+
         setMotorMode(DcMotor.RunMode.RUN_TO_POSITION)
-        setMotorPowers(normalized, power)
+        setMotorPowers(vector, power)
     }
 
     /**

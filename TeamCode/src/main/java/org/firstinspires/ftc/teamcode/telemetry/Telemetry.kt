@@ -52,9 +52,9 @@ interface ITelemetry {
     fun fatal(info: String)
 
     /**
-     * Clears the telemetry history, thus clearing the telemetry screen on the driver station.
+     * Flushes all added messages to the screen and clears the buffer.
      */
-    fun clear()
+    fun flush()
 }
 
 /**
@@ -89,7 +89,7 @@ class Telemetry(private val telem: org.firstinspires.ftc.robotcore.external.Tele
         this.telem.addData("Error Info", info)
     }
 
-    override fun clear() {
+    override fun flush() {
         wrapUp()
     }
 

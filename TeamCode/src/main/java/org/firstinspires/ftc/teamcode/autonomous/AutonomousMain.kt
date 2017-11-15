@@ -42,9 +42,16 @@ class AutonomousMain : LinearOpMode() {
     override fun runOpMode() {
         if (!initAll()) return
 
-        waitForStart()
+        with(hardware!!) {
 
-        // TODO(waiting) hardware unfinished
+            // The glyph clamp will be preloaded with a glyph. Close the clamp to hold it.
+            clamp.leftArm = true
+            clamp.rightArm = true
+
+            waitForStart()
+
+            // TODO(waiting) hardware unfinished, particularly encoders
+        }
     }
 
     /**

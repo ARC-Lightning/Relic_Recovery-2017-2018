@@ -15,8 +15,10 @@ import com.qualcomm.robotcore.hardware.Servo
 interface IJewelKnocker {
 
     // I/O requirements
-    val sensor: ColorSensor
-    val servo: Servo
+    val color: ColorSensor
+    val arm: Servo
 
+    fun detect(): TeamColor
 
+    fun removeJewel(towardCorner: Boolean)
 }
