@@ -27,8 +27,8 @@ class AutonomousMain : LinearOpMode() {
     }
 
     var hardware: Hardware? = null
-
     var navigator: AcsNavigator? = null
+    var vuforia: Vuforia? = null
 
     /**
      *
@@ -49,6 +49,7 @@ class AutonomousMain : LinearOpMode() {
             clamp.rightArm = true
 
             waitForStart()
+            vuforia!!.startTracking()
 
             // TODO(waiting) hardware unfinished, particularly encoders
         }
@@ -62,12 +63,14 @@ class AutonomousMain : LinearOpMode() {
      * - Manipulators│
      * - Sensors     ╯
      * - Navigator (GameMap)
+     * - VuMark Reading (Vuforia)
      */
     private fun initAll(): Boolean {
         try {
 
             hardware = Hardware.new(this, motorPower)
             navigator = AcsNavigator(hardware!!.telemetry, hardware!!.drivetrain)
+            vuforia = Vuforia(this)
 
         } catch (exc: Exception) {
             telemetry.addData("FATAL", "ERROR")
@@ -77,4 +80,3 @@ class AutonomousMain : LinearOpMode() {
         return true
     }
 }
-

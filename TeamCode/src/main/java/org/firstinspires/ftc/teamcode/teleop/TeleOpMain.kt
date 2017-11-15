@@ -49,33 +49,36 @@ class TeleOpMain : OpMode() {
         with(bot!!) {
             fun Boolean.int() = if (this) 1.0 else 0.0
 
-            // Drivetrain movement
-            val moveVec = Vector2D(
-                    gamepad1.right_trigger - gamepad1.left_trigger.toDouble(),
-                    -gamepad1.left_stick_y.toDouble())
-            drivetrain.startMove(moveVec, moveVec.length() / Math.sqrt(2.0))
-            telemetry.write("Move vector", moveVec.toString())
+            with(gamepad1) {
+                // Drivetrain movement
+                val moveVec = Vector2D(
+                        left_stick_x.toDouble(),
+                        -left_stick_y.toDouble())
+                drivetrain.startMove(moveVec, moveVec.length() / Math.sqrt(2.0))
+                telemetry.write("Move vector", moveVec.toString())
 
-            // Drivetrain turning
-            val turningPower = Config.motorPower * Config.turnSpeed
-            val turningValue = gamepad1.right_stick_x * turningPower
-            drivetrain.startTurn(turningValue)
-            telemetry.write("Turn power", turningValue.toString())
+                // Drivetrain turning
+                val turningPower = Config.motorPower * Config.turnSpeed
+                val turningValue = right_stick_x * turningPower
+                drivetrain.startTurn(turningValue)
+                telemetry.write("Turn power", turningValue.toString())
+            }
 
-            // Glyph clamp
-            fun clampBind(close: Boolean, open: Boolean, current: Boolean)
-                    = current != (close != open && current != open)
-            clamp.leftArm = clampBind(
-                    gamepad2.left_bumper, gamepad2.left_trigger > 0.3, clamp.leftArm)
-            clamp.rightArm = clampBind(
-                    gamepad2.right_bumper, gamepad2.right_trigger > 0.3, clamp.rightArm)
+            with(gamepad2) {
+                // Glyph clamp
+                fun clampBind(close: Boolean, open: Boolean, current: Boolean)
+                        = current != (close != open && current != open)
+                clamp.leftArm = clampBind(
+                        left_bumper, left_trigger > 0.3, clamp.leftArm)
+                clamp.rightArm = clampBind(
+                        right_bumper, right_trigger > 0.3, clamp.rightArm)
 
-            // Glyph clamp lift
-            val liftPower = (gamepad2.dpad_up.int() * Config.clampLiftPower) -
-                    (gamepad2.dpad_down.int() * Config.clampLiftPower)
-            clamp.liftPower = liftPower
-            telemetry.write("Lift power", liftPower.toString())
-
+                // Glyph clamp lift
+                val liftPower = (dpad_up.int() * Config.clampLiftPower) -
+                        (dpad_down.int() * Config.clampLiftPower)
+                clamp.liftPower = liftPower
+                telemetry.write("Lift power", liftPower.toString())
+            }
 
         }
 

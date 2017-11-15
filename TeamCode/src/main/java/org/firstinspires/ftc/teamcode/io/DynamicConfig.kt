@@ -18,6 +18,8 @@ object DynamicConfig {
         To add config properties, just follow the pattern of existing properties.
         Config properties are non-Nullable (thus having a default value) to prevent NPEs.
 
+        NOTE: Most edits right before the match happen here.
+
      */
     // -- START CONFIG PROPERTIES --
 
