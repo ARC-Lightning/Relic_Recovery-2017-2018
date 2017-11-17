@@ -6,7 +6,7 @@ import com.qualcomm.robotcore.hardware.Gamepad
  * Provides a mechanism that stores the gamepad's state, allowing actions to be performed when a
  * given value of the gamepad *changes*.
  *
- * IMPORTANT: the `update` method should be called, ideally, repetitively to trap gamepad changes
+ * IMPORTANT: the `update` method should be called repetitively to trap gamepad changes
  *            responsively.
  *
  * @author Michael Peng

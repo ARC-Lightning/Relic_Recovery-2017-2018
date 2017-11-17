@@ -1,6 +1,8 @@
 package org.firstinspires.ftc.teamcode.tests
 
 import com.qualcomm.robotcore.eventloop.opmode.OpMode
+import com.qualcomm.robotcore.eventloop.opmode.TeleOp
+import org.firstinspires.ftc.teamcode.autonomous.IVuforia
 import org.firstinspires.ftc.teamcode.autonomous.Vuforia
 
 /**
@@ -11,6 +13,7 @@ import org.firstinspires.ftc.teamcode.autonomous.Vuforia
  *
  * FIRST - Gracious Professionalism
  */
+@TeleOp(name = "Vuforia Test", group = "Pragmaticos")
 class VuforiaTest : OpMode() {
 
     // Quick reference for the unacquainted
@@ -26,7 +29,7 @@ class VuforiaTest : OpMode() {
     )
 
     // Vuforia's wrapper
-    var vuforia: Vuforia? = null
+    var vuforia: IVuforia? = null
 
     override fun init() {
         reference.forEach { (fst, snd) ->
@@ -48,7 +51,6 @@ class VuforiaTest : OpMode() {
     }
 
     override fun stop() {
-        super.stop()
         vuforia!!.stopTracking()
     }
 }

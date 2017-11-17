@@ -28,7 +28,7 @@ class AutonomousMain : LinearOpMode() {
 
     var hardware: Hardware? = null
     var navigator: AcsNavigator? = null
-    var vuforia: Vuforia? = null
+    var vuforia: IVuforia? = null
 
     /**
      *

@@ -18,7 +18,7 @@ class GlyphClamp(
         var leftServo: Servo,
         var rightServo: Servo,
         var lift: DcMotor,
-        private val telem: ITelemetry) {
+        private val telem: ITelemetry) : IGlyphClamp {
 
     // Positions
     private val leftPositions = object {
@@ -46,7 +46,7 @@ class GlyphClamp(
     // Usage example:
     //   - Set: Use `clamp.leftArm = gamepad1.left_bumper`
     //   - Query: Use `clamp.leftArm`
-    var leftArm: Boolean
+    override var leftArm: Boolean
         get() = this.isLeftClamping
         set(newStatus) {
             if (newStatus != this.isLeftClamping) {
@@ -55,7 +55,7 @@ class GlyphClamp(
                 telem.write("GlyphClamp", "Left clamp now ${if (newStatus) "clamping" else "relaxed"}")
             }
         }
-    var rightArm: Boolean
+    override var rightArm: Boolean
         get() = this.isRightClamping
         set(newStatus) {
             if (newStatus != this.isRightClamping) {
@@ -66,7 +66,7 @@ class GlyphClamp(
         }
 
     // In TeleOp's mappings, simply use `clamp.liftPower = gamepad1.stick_left_y` or similar
-    var liftPower: Double
+    override var liftPower: Double
         get() = this.lift.power
         set(newPower) {
             this.lift.power = newPower

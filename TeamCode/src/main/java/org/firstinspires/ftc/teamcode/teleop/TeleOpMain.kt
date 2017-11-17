@@ -59,7 +59,10 @@ class TeleOpMain : OpMode() {
 
                 // Drivetrain turning
                 val turningPower = Config.motorPower * Config.turnSpeed
-                val turningValue = right_stick_x * turningPower
+                // The x axis of a stick on the gamepad is positive when it is to the right.
+                //   Since positive power in startTurn turns the robot counter-clockwise,
+                //   it may be more intuitive to invert the x value.
+                val turningValue = -right_stick_x * turningPower
                 drivetrain.startTurn(turningValue)
                 telemetry.write("Turn power", turningValue.toString())
             }

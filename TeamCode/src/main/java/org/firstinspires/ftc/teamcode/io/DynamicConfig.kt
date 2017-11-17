@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.io
 
 import com.qualcomm.robotcore.hardware.Gamepad
+import org.firstinspires.ftc.teamcode.TeamColor
 import org.firstinspires.ftc.teamcode.teleop.GamepadRule
 
 /**
@@ -60,13 +61,3 @@ object DynamicConfig {
     }
 }
 
-enum class TeamColor {
-    RED, BLUE;
-
-    companion object {
-        fun oppositeOf(color: TeamColor): TeamColor = when (color) {
-            RED -> BLUE
-            BLUE -> RED
-        }
-    }
-}

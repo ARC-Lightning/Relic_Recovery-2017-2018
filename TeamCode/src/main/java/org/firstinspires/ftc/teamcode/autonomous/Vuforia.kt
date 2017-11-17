@@ -16,7 +16,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackables
  *
  * FIRST - Gracious Professionalism
  */
-class Vuforia constructor(opMode: OpMode) {
+class Vuforia constructor(opMode: OpMode) : IVuforia {
     companion object {
         // Setup procedures
         fun createLocalizer(context: Context, useCameraMonitor: Boolean): VuforiaLocalizer {
@@ -50,12 +50,11 @@ class Vuforia constructor(opMode: OpMode) {
     private val trackables = loadTrackables(localizer)
     private val template = loadTemplate(trackables)
 
-    fun startTracking() =
+    override fun startTracking() =
             trackables.activate()
 
-    fun readVuMark() =
+    override fun readVuMark() =
             RelicRecoveryVuMark.from(template)
 
-    fun stopTracking() =
-            trackables.deactivate()
+    override fun stopTracking() {}
 }

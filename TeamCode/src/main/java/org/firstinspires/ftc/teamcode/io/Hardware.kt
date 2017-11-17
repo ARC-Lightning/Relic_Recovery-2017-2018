@@ -19,7 +19,7 @@ import org.firstinspires.ftc.teamcode.telemetry.Telemetry
 class Hardware internal constructor(
         val drivetrain: IDrivetrain,
         val telemetry: ITelemetry,
-        val clamp: GlyphClamp) {
+        val clamp: IGlyphClamp) {
 
     companion object {
 

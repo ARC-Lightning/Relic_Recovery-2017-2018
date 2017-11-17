@@ -24,7 +24,7 @@ Kotlin is a programming language that runs on the Java Virtual Machine (JVM) pla
 \begin{description}
 
 \item[Lambdas]
-Whereas Java offers Runnables as an equivalent to a lambda with no parameters or return values\footnote{Java 8 has been ignored because FTC's official Robot Controller repository uses Java 7.}, Kotlin offers full lambda support with parameters and implicit return values. This allows us to implement callback mappings in a readable, writable, and understandable way. For example, the \texttt{GamepadListener} class contains a \texttt{Map} from the \texttt{typealias} \texttt{GamepadProperty} to the \texttt{typealias} \texttt{GamepadRule}, both of which represent lambdas with a given set of input types. Lambdas are also extensively used in iterator transformations such as \texttt{map}, \texttt{filter}, and \texttt{reduce}. Kotlin's support for Lambdas makes implementations of these functions possible without third-party libraries, as opposed to the case in Java 7.
+Whereas Java offers Runnables as an equivalent to a lambda with no parameters or return values\footnote{We ignored Java 8+ because FTC's official Robot Controller repository, at the time of writing, still uses Java 7.}, Kotlin offers full lambda support with parameters and implicit return values. This allows us to implement callback mappings in a readable, writable, and understandable way. For example, the \texttt{GamepadListener} class contains a \texttt{Map} from the \texttt{typealias} \texttt{GamepadProperty} to the \texttt{typealias} \texttt{GamepadRule}, both of which represent lambdas with a given set of input types. Lambdas are also extensively used in iterator transformations such as \texttt{map}, \texttt{filter}, and \texttt{reduce}. Kotlin's support for Lambdas makes implementations of these functions possible without third-party libraries, as opposed to the case in Java 7.
 
 \item[Null Safety]
 Types in Kotlin are non-nullable by default, whereas any non-primitive type in Java can be \texttt{null}. Although this does not bring exciting new features to our code, it encourages us to handle null cases when the type is declared to be nullable, preventing \texttt{NullPointerException}s.
@@ -34,9 +34,31 @@ Data classes in Kotlin were designed to address use cases where the only respons
 
 \end{description}
 
-There are many other delightful features in Kotlin compared to Java. \href{https://kotlinlang.org/docs/reference/idioms.html}{Click here for some common idioms in Kotlin.}
+There are many other delightful features in Kotlin that boost developer productivity and satisfaction compared to Java. \href{https://kotlinlang.org/docs/reference/idioms.html}{Click here for some common idioms in Kotlin.}
 
 \subsubsection{Low Entry Point}
 
-Kotlin is developed by JetBrains. The platform on which Android Studio is based on, IntelliJ, is also developed by JetBrains. JetBrains is known for superb language support in IDEs, and Kotlin is no exception. To ease the entry point for aspiring developers without Kotlin knowledge, 
+Kotlin is developed by JetBrains. The platform on which Android Studio is based on, IntelliJ, is also developed by JetBrains. JetBrains is known for superb language support in IDEs, and Kotlin is no exception. IntelliJ's Kotlin plugin is capable of converting any Java file directly to Kotlin just by copy-and-paste, so developers on the team may choose to write in either language. Although consistency in language is encouraged, Kotlin's seamless support for Java inter-op allows our developers to also keep their code in Java---no practical disadvantage results from the mixing of both languages.
+
+\subsection{Modular Structure}
+
+\subsubsection{Interfaces}
+
+\subsubsection{Responsibilities}
+
+\subsection{Principles}
+
+\begin{description}
+
+\item[Minimizing Coupling]
+
+\item[D.R.Y.]
+
+\item[Readability]
+
+\item[Syntax Style]
+\href{https://android.github.io/kotlin-guides/style.html}{Style guide}
+
+\end{description}
+
 \end{document}

@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.io
 
 import com.qualcomm.robotcore.hardware.ColorSensor
 import com.qualcomm.robotcore.hardware.Servo
+import org.firstinspires.ftc.teamcode.TeamColor
 
 /**
  * The knocker of jewels, implemented for use in Autonomous.
