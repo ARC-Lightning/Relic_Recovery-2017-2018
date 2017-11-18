@@ -3,7 +3,6 @@ package org.firstinspires.ftc.teamcode.drivetrain
 import com.qualcomm.robotcore.hardware.DcMotor
 import com.qualcomm.robotcore.hardware.DcMotorSimple
 import com.qualcomm.robotcore.util.Range
-import org.firstinspires.ftc.teamcode.io.Hardware
 import org.locationtech.jts.algorithm.Angle
 import org.locationtech.jts.math.Vector2D
 
@@ -140,8 +139,8 @@ class Drivetrain(
         getMotorPowerFromVector(direction).entries
                 // For each pair -> power entry
                 .forEach { mapping ->
-                    // TODO(remove) bad debugging method below
-                    Hardware.instance!!.telemetry.data(mapping.key.displayName, mapping.value * multiplier)
+                    // TUDO(remove) bad debugging method below
+                    // Hardware.instance!!.telemetry.data(mapping.key.displayName, mapping.value * multiplier)
                     forEachOf(*mapping.key.motors) {
                         it.power = mapping.value * multiplier
                     }

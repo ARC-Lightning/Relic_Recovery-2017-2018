@@ -19,7 +19,8 @@ import org.firstinspires.ftc.teamcode.telemetry.Telemetry
 class Hardware internal constructor(
         val drivetrain: IDrivetrain,
         val telemetry: ITelemetry,
-        val clamp: IGlyphClamp) {
+        val clamp: IGlyphClamp,
+        val knocker: IJewelKnocker) {
 
     companion object {
 
@@ -28,32 +29,40 @@ class Hardware internal constructor(
         fun new(opMode: OpMode, motorPower: Double): Hardware? {
             val telemetry = Telemetry(opMode.telemetry)
             try {
+                with(opMode.hardwareMap) {
 
-                // Mecanum wheels
-                val drivetrain = Drivetrain(motorPower, mapOf(
-                        IDrivetrain.MotorPtr.FRONT_LEFT to opMode.hardwareMap.dcMotor.get("FrontLeft"),
-                        IDrivetrain.MotorPtr.FRONT_RIGHT to opMode.hardwareMap.dcMotor.get("FrontRight"),
-                        IDrivetrain.MotorPtr.REAR_LEFT to opMode.hardwareMap.dcMotor.get("RearLeft"),
-                        IDrivetrain.MotorPtr.REAR_RIGHT to opMode.hardwareMap.dcMotor.get("RearRight")
-                ))
+                    // Mecanum wheels
+                    val drivetrain = Drivetrain(motorPower, mapOf(
+                            IDrivetrain.MotorPtr.FRONT_LEFT to dcMotor.get("FrontLeft"),
+                            IDrivetrain.MotorPtr.FRONT_RIGHT to dcMotor.get("FrontRight"),
+                            IDrivetrain.MotorPtr.REAR_LEFT to dcMotor.get("RearLeft"),
+                            IDrivetrain.MotorPtr.REAR_RIGHT to dcMotor.get("RearRight")
+                    ))
 
-                // GlyphClamp servos
-                val leftClamp = opMode.hardwareMap.servo.get("LeftClamp")
-                val rightClamp = opMode.hardwareMap.servo.get("RightClamp")
+                    // GlyphClamp servos
+                    val leftClamp = servo.get("LeftClamp")
+                    val rightClamp = servo.get("RightClamp")
 
-                // GlyphClampElevator motor
-                val clampLift = opMode.hardwareMap.dcMotor.get("ClampLift")
+                    // GlyphClampElevator motor
+                    val clampLift = dcMotor.get("ClampLift")
 
-                // JewelKnocker
-                // TODO(waiting) Ian's Implementation
+                    // JewelKnocker
+                    val knocker = AuxJewelKnocker(
+                            telemetry,
+                            drivetrain,
+                            color = colorSensor.get("JewelSensor"),
+                            arm = servo.get("JewelArm"))
 
-                // Grand finale
-                val hw = Hardware(
-                        drivetrain,
-                        telemetry,
-                        GlyphClamp(leftClamp, rightClamp, clampLift, telemetry))
-                instance = hw
-                return hw
+                    // Grand finale
+                    val hw = Hardware(
+                            drivetrain,
+                            telemetry,
+                            GlyphClamp(leftClamp, rightClamp, clampLift, telemetry),
+                            knocker)
+
+                    instance = hw
+                    return hw
+                }
 
             } catch (exc: Exception) {
                 telemetry.fatal("Failed to initialize hardware: ${exc.message ?: "the robot, too, doesn't know why"}")

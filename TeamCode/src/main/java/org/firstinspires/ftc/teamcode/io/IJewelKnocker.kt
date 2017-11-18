@@ -19,7 +19,27 @@ interface IJewelKnocker {
     val color: ColorSensor
     val arm: Servo
 
-    fun detect(): TeamColor
+    /**
+     * Lowers the knocker arm on which the color sensor is mounted.
+     */
+    fun lowerArm()
 
-    fun removeJewel(towardCorner: Boolean)
+    /**
+     * Reads from the ColorSensor and returns the TeamColor to which the values are closest.
+     * @return The team color at which the color sensor seems to be looking, or null if the data is confusing.
+     */
+    fun detect(): TeamColor?
+
+    /**
+     * Moves or turns the robot in a way that knocks off a jewel, in the direction specified by the
+     * parameter.
+     *
+     * @param towardDetectedJewel True if the jewel that the color sensor is looking at shall be knocked off
+     */
+    fun removeJewel(towardDetectedJewel: Boolean)
+
+    /**
+     * Raises the knocker arm on which the color sensor is mounted.
+     */
+    fun raiseArm()
 }
