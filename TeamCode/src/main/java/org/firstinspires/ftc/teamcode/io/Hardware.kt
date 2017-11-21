@@ -9,68 +9,72 @@ import org.firstinspires.ftc.teamcode.telemetry.Telemetry
 /**
  * Defines modules and hardware necessary to run both Autonomous and TeleOp.
  * Includes all code that is used in both modes.
- * Both AutoMain and TeleOpMain should have an instance of this class.
+ * Both AutonomousMain and TeleOpMain should have an instance of this class.
  *
  * @author Michael Peng
  * For team: 4410 (Lightning)
  *
  * FIRST - Gracious Professionalism
  */
-class Hardware internal constructor(
-        val drivetrain: IDrivetrain,
-        val telemetry: ITelemetry,
-        val clamp: IGlyphClamp,
-        val knocker: IJewelKnocker) {
+class Hardware(
+        opMode: OpMode,
+        motorPower: Double
+) {
 
-    companion object {
+    val drivetrain: IDrivetrain
+    val telemetry: ITelemetry
+    val clamp: IGlyphClamp
+    val knocker: IJewelKnocker
 
-        // This function was put into a companion object because the return value is nullable.
-        // Secondary constructors are required to delegate to the primary one and cannot return null.
-        fun new(opMode: OpMode, motorPower: Double): Hardware? {
-            val telemetry = Telemetry(opMode.telemetry)
-            try {
-                with(opMode.hardwareMap) {
+    init {
+        telemetry = Telemetry(opMode.telemetry)
+        try {
 
-                    // Mecanum wheels
-                    val drivetrain = Drivetrain(motorPower, mapOf(
-                            IDrivetrain.MotorPtr.FRONT_LEFT to dcMotor.get("FrontLeft"),
-                            IDrivetrain.MotorPtr.FRONT_RIGHT to dcMotor.get("FrontRight"),
-                            IDrivetrain.MotorPtr.REAR_LEFT to dcMotor.get("RearLeft"),
-                            IDrivetrain.MotorPtr.REAR_RIGHT to dcMotor.get("RearRight")
-                    ))
+            // NOTE: A with block is impractical in this situation due to prohibited initialization
+            // of vals in a block. Kotlinc will be dissatisfied.
 
-                    // GlyphClamp servos
-                    val leftClamp = servo.get("LeftClamp")
-                    val rightClamp = servo.get("RightClamp")
+            // Mecanum wheels
+            drivetrain = Drivetrain(motorPower, mapOf(
+                    IDrivetrain.MotorPtr.FRONT_LEFT to opMode.hardwareMap.dcMotor.get("FrontLeft"),
+                    IDrivetrain.MotorPtr.FRONT_RIGHT to opMode.hardwareMap.dcMotor.get("FrontRight"),
+                    IDrivetrain.MotorPtr.REAR_LEFT to opMode.hardwareMap.dcMotor.get("RearLeft"),
+                    IDrivetrain.MotorPtr.REAR_RIGHT to opMode.hardwareMap.dcMotor.get("RearRight")
+            ))
 
-                    // GlyphClampElevator motor
-                    val clampLift = dcMotor.get("ClampLift")
+            // GlyphClamp servos
+            val leftClamp = opMode.hardwareMap.servo.get("LeftClamp")
+            val rightClamp = opMode.hardwareMap.servo.get("RightClamp")
 
-                    // JewelKnocker
-                    val knocker = AuxJewelKnocker(
-                            telemetry,
-                            drivetrain,
-                            color = colorSensor.get("JewelSensor"),
-                            arm = servo.get("JewelArm"))
+            // GlyphClampElevator motor
+            val clampLift = opMode.hardwareMap.dcMotor.get("ClampLift")
 
-                    // Grand finale
-                    val hw = Hardware(
-                            drivetrain,
-                            telemetry,
-                            GlyphClamp(leftClamp, rightClamp, clampLift, telemetry),
-                            knocker)
+            // GlyphClamp instance
+            clamp = GlyphClamp(
+                    leftClamp,
+                    rightClamp,
+                    clampLift,
+                    telemetry
+            )
 
-                    instance = hw
-                    return hw
-                }
+            // JewelKnocker
+            knocker = AuxJewelKnocker(
+                    telemetry,
+                    drivetrain,
+                    color = opMode.hardwareMap.colorSensor.get("JewelSensor"),
+                    arm = opMode.hardwareMap.servo.get("JewelArm"))
 
-            } catch (exc: Exception) {
-                telemetry.fatal("Failed to initialize hardware: ${exc.message ?: "the robot, too, doesn't know why"}")
-                opMode.requestOpModeStop()
-                throw RuntimeException(exc)
-            }
+            instance = this
+
+        } catch (exc: Exception) {
+            telemetry.fatal(
+                    "Failed to initialize hardware: ${exc.message ?: "the robot, too, doesn't know why"}")
+            opMode.requestOpModeStop()
+            throw RuntimeException(exc)
         }
 
+    }
+
+    companion object {
         /**
          * A singleton copy of the active hardware.
          * This should never be referenced in "static" blocks, variable declarations, or any other

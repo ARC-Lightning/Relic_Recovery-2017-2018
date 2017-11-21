@@ -31,22 +31,22 @@ class TeleOpMain : OpMode() {
         val clampLiftPower = 0.3
     }
 
-    private var bot: Hardware? = null
-    private var padListener: GamepadListener? = null
+    lateinit private var bot: Hardware
+    lateinit private var padListener: GamepadListener
 
     override fun init() {
         // Initialize systems
-        bot = Hardware.new(this, Config.motorPower)
+        bot = Hardware(this, Config.motorPower)
         padListener = GamepadListener(gamepad1, DynamicConfig.Mapping.mappings)
     }
 
     override fun init_loop() {
-        padListener!!.update()
+        padListener.update()
     }
 
     override fun loop() {
         // Gamepad mappings
-        with(bot!!) {
+        with(bot) {
             fun Boolean.int() = if (this) 1.0 else 0.0
 
             with(gamepad1) {
@@ -86,6 +86,6 @@ class TeleOpMain : OpMode() {
         }
 
         // Messages only pertain to one loop
-        bot!!.telemetry.flush()
+        bot.telemetry.flush()
     }
 }

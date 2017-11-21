@@ -9,6 +9,7 @@ import org.locationtech.jts.math.Vector2D
 
 /**
  * An auxiliary implementation of the IJewelKnocker interface for backup use.
+ * For documentation on the individual methods, see IJewelKnocker.
  *
  * @author Michael Peng
  * For team: 4410 (Lightning)

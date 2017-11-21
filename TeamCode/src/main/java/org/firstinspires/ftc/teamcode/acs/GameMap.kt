@@ -186,30 +186,4 @@ private constructor(
             TeamColor.BLUE -> if (isLeft) "BottomRight" else "TopRight"
         }
     }
-
-    /*
-    maps.put("BottomRight", GameMap(
-            factory.createPolygon(arrayOf(Coordinate(0.0, 0.0), Coordinate((24 * 3).toDouble(), 0.0), Coordinate((24 * 3).toDouble(), (24 * 3).toDouble()), Coordinate(24.0, (24 * 3).toDouble()), Coordinate(0.0, (24 * 2).toDouble()))),
-            HashMap(),
-            object : HashMap<String, Position>() {
-                init {
-                    // TODO Make fine adjustments to these coordinates
-
-                    // On the balancing stone
-                    put("start", Position(Coordinate((24 * 2).toDouble(), (24 * 2).toDouble()), 0.0))
-                    // On the balancing stone, ready to read/knock the jewels
-                    put("jewel-knock", Position(Coordinate((24 * 2).toDouble(), (24 * 2).toDouble()), Angle.toRadians(90.0)))
-                    // (Parked) in the safe zone
-                    put("safe-zone", Position(Coordinate(24 * 1.5, 24 * 0.6), 0.0))
-                    // Putting the pre-loaded glyph into the leftmost crypto-box column
-                    put("load-column1", Position(Coordinate(24 * 1.8, 24 * 0.9), Angle.toRadians(180.0)))
-                    // Putting the pre-loaded glyph into the middle crypto-box column
-                    put("load-column2", Position(Coordinate(24 * 1.5, 24 * 0.9), Angle.toRadians(180.0)))
-                    // Putting the pre-loaded glyph into the rightmost crypto-box column
-                    put("load-column3", Position(Coordinate(24 * 0.2, 24 * 0.9), Angle.toRadians(180.0)))
-                }
-            }
-    ))*/
-
-
 }

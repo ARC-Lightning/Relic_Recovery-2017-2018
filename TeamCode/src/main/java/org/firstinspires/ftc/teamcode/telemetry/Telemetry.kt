@@ -8,7 +8,7 @@ class Telemetry(private val telem: org.firstinspires.ftc.robotcore.external.Tele
 
     init {
         this.telem.addData("Hello World", "Telemetry Initialized!")
-        this.telem.update()
+        flush()
     }
 
     override fun write(caption: String, data: String) {

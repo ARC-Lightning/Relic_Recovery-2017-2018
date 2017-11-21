@@ -16,7 +16,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackables
  *
  * FIRST - Gracious Professionalism
  */
-class Vuforia(opMode: OpMode) : IVuforia {
+class Vuforia(opMode: OpMode, useCameraMonitor: Boolean = true) : IVuforia {
     companion object {
         // Setup procedures
         fun createLocalizer(context: Context, useCameraMonitor: Boolean): VuforiaLocalizer {
@@ -46,7 +46,7 @@ class Vuforia(opMode: OpMode) : IVuforia {
     }
 
     // Constructs (initializes) the Vuforia trackables & localizer
-    val localizer = createLocalizer(opMode.hardwareMap.appContext, true)
+    val localizer = createLocalizer(opMode.hardwareMap.appContext, useCameraMonitor)
     private val trackables = loadTrackables(localizer)
     private val template = loadTemplate(trackables)
 

@@ -74,7 +74,7 @@ interface IDrivetrain {
 
     /**
      * A class containing vectors representing all of 8 directions in which the robot is capable of
-     * moving.
+     * moving without motor power control.
      */
     object VectorDirection {
         val FORWARD = Vector2D(0.0, 1.0)

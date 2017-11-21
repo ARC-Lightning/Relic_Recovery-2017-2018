@@ -18,7 +18,7 @@ class Drivetrain(
         /**
          * The default power setting. Used when `move` or `startMove` is called without the 2nd argument.
          */
-        private val powerSetting: Double,
+        override val defaultPower: Double,
         /**
          * A mapping from MotorPtrs to DcMotor instances.
          */
@@ -185,7 +185,7 @@ class Drivetrain(
      *
      * @param vector The vector to move the robot in. See comment above for how it works.
      */
-    override fun move(vector: Vector2D) = this.move(vector, powerSetting)
+    override fun move(vector: Vector2D) = this.move(vector, defaultPower)
 
     /**
      * Moves the robot according to the specified vector in the specified power.
@@ -221,7 +221,7 @@ class Drivetrain(
      *
      * @return True if any drivetrain motor is busy, otherwise false
      */
-    override fun isBusy(): Boolean = this.motors.values.any { it.isBusy }
+    override val isBusy: Boolean get() = this.motors.values.any { it.isBusy }
 
     /**
      * Starts moving the robot at the default speed according to the specified direction.
@@ -231,7 +231,7 @@ class Drivetrain(
      * @param direction A vector from and only from {@see VectorDirection}.
      */
     override fun startMove(direction: Vector2D) {
-        this.startMove(direction, powerSetting)
+        this.startMove(direction, defaultPower)
     }
 
     /**
@@ -262,7 +262,7 @@ class Drivetrain(
      *
      * @param radians The amount of radians to rotate the robot for, [-2π, 2π]
      */
-    override fun turn(radians: Double) = turn(radians, powerSetting)
+    override fun turn(radians: Double) = turn(radians, defaultPower)
 
     /**
      * Turns the robot in position for the given amount of radians (of change applied to the robot's
@@ -303,13 +303,13 @@ class Drivetrain(
         }
     }
 
-    override fun startTurn(isCounterClockwise: Boolean) {
-        // Redundancy purposefully included to improve readability
-        if (isCounterClockwise)
-            startTurn(powerSetting)
-        else
-            startTurn(-powerSetting)
-    }
+    // Redundancy purposefully included to improve readability
+    override fun startTurn(isCounterClockwise: Boolean) =
+            if (isCounterClockwise) {
+                startTurn(defaultPower)
+            } else {
+                startTurn(-defaultPower)
+            }
 
     override fun startTurn(power_: Double) {
         val power = Range.clip(power_, -1.0, 1.0)
@@ -339,6 +339,4 @@ class Drivetrain(
      * @return The DcMotor object representing the specified motor
      */
     override fun getMotor(ptr: IDrivetrain.MotorPtr): DcMotor = this.motors[ptr]!!
-
-    override fun getDefaultPower(): Double = this.powerSetting
 }

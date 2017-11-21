@@ -38,8 +38,8 @@ class GlyphClamp(
     }
 
     // Store the status on our own so we do not flood the servo with getPosition requests
-    private var isLeftClamping: Boolean = false
-    private var isRightClamping: Boolean = false
+    private var _leftArm: Boolean = false
+    private var _rightArm: Boolean = false
 
     // True if clamping
     // Public getter/setter
@@ -47,20 +47,20 @@ class GlyphClamp(
     //   - Set: Use `clamp.leftArm = gamepad1.left_bumper`
     //   - Query: Use `clamp.leftArm`
     override var leftArm: Boolean
-        get() = this.isLeftClamping
+        get() = this._leftArm
         set(newStatus) {
-            if (newStatus != this.isLeftClamping) {
+            if (newStatus != this._leftArm) {
                 this.leftServo.position = if (newStatus) leftPositions.clamping else leftPositions.open
-                this.isLeftClamping = newStatus
+                this._leftArm = newStatus
                 telem.write("GlyphClamp", "Left clamp now ${if (newStatus) "clamping" else "relaxed"}")
             }
         }
     override var rightArm: Boolean
-        get() = this.isRightClamping
+        get() = this._rightArm
         set(newStatus) {
-            if (newStatus != this.isRightClamping) {
+            if (newStatus != this._rightArm) {
                 this.rightServo.position = if (newStatus) rightPositions.clamping else rightPositions.open
-                this.isRightClamping = newStatus
+                this._rightArm = newStatus
                 telem.write("GlyphClamp", "Right clamp now ${if (newStatus) "clamping" else "relaxed"}")
             }
         }

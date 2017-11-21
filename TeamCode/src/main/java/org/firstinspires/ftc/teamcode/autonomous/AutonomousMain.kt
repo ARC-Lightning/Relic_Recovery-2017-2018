@@ -26,15 +26,12 @@ class AutonomousMain : LinearOpMode() {
         val motorPower = 0.9
     }
 
-    var hardware: Hardware? = null
-    var navigator: AcsNavigator? = null
-    var vuforia: IVuforia? = null
+    lateinit var hardware: Hardware
+    lateinit var navigator: AcsNavigator
+    lateinit var vuforia: IVuforia
 
     /**
-     *
-     *
-     * Please do not swallow the InterruptedException, as it is used in cases
-     * where the op mode needs to be terminated early.
+     * Main procedure for Autonomous.
      *
      * @throws InterruptedException
      */
@@ -42,14 +39,14 @@ class AutonomousMain : LinearOpMode() {
     override fun runOpMode() {
         if (!initAll()) return
 
-        with(hardware!!) {
+        with(hardware) {
 
             // The glyph clamp will be preloaded with a glyph. Close the clamp to hold it.
             clamp.leftArm = true
             clamp.rightArm = true
 
             waitForStart()
-            vuforia!!.startTracking()
+            vuforia.startTracking()
 
             // TODO(waiting) hardware unfinished, particularly encoders
         }
@@ -68,8 +65,8 @@ class AutonomousMain : LinearOpMode() {
     private fun initAll(): Boolean {
         try {
 
-            hardware = Hardware.new(this, motorPower)
-            navigator = AcsNavigator(hardware!!.telemetry, hardware!!.drivetrain)
+            hardware = Hardware(this, motorPower)
+            navigator = AcsNavigator(hardware.telemetry, hardware.drivetrain)
             vuforia = Vuforia(this)
 
         } catch (exc: Exception) {
