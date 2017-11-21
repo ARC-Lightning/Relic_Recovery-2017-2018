@@ -16,7 +16,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackables
  *
  * FIRST - Gracious Professionalism
  */
-class Vuforia constructor(opMode: OpMode) : IVuforia {
+class Vuforia(opMode: OpMode) : IVuforia {
     companion object {
         // Setup procedures
         fun createLocalizer(context: Context, useCameraMonitor: Boolean): VuforiaLocalizer {

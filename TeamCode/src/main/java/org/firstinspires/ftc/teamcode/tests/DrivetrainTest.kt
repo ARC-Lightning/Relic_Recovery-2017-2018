@@ -5,7 +5,13 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp
 import com.qualcomm.robotcore.hardware.DcMotor
 
 /**
- * Created by michael on 11/9/17.
+ * A utility program that tests all drivetrain motors individually for potential hardware issues.
+ * Does not involve IDrivetrain.
+ *
+ * @author Michael Peng
+ * For team: 4410 (Lightning)
+ *
+ * FIRST - Gracious Professionalism
  */
 @TeleOp(name = "DrivetrainTest", group = "Pragmaticos")
 class DrivetrainTest : OpMode() {

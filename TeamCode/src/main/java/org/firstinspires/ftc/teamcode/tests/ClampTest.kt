@@ -5,6 +5,15 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp
 import com.qualcomm.robotcore.hardware.DcMotor
 import com.qualcomm.robotcore.hardware.Servo
 
+/**
+ * A utility program that tests the operation of the glyph clamp.
+ * For controls, see the `reference' field below.
+ *
+ * @author Michael Peng
+ * For team: 4410 (Lightning)
+ *
+ * FIRST - Gracious Professionalism
+ */
 @TeleOp(name = "ClampTest", group = "Pragmaticos")
 class ClampTest : OpMode() {
 

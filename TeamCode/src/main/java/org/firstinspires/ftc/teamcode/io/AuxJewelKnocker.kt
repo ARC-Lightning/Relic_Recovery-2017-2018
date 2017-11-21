@@ -35,6 +35,7 @@ class AuxJewelKnocker(val telemetry: ITelemetry,
 
         // How far it should go when knocking a jewel off (in inches)
         val knockDistance = 2.0
+
     }
 
     override fun lowerArm() {

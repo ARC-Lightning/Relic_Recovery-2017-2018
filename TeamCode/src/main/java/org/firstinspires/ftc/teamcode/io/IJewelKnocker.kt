@@ -42,4 +42,10 @@ interface IJewelKnocker {
      * Raises the knocker arm on which the color sensor is mounted.
      */
     fun raiseArm()
+
+    // The ideal scoring process:
+    //  - lowerArm()
+    //  - detect() == DynamicConfig.team ?
+    //  - removeJewel([result above])
+    //  - raiseArm()
 }

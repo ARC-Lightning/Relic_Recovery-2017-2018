@@ -33,10 +33,6 @@ class Telemetry(private val telem: org.firstinspires.ftc.robotcore.external.Tele
     }
 
     override fun flush() {
-        wrapUp()
-    }
-
-    private fun wrapUp() {
         telem.update()
     }
 }

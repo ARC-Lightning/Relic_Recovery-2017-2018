@@ -55,8 +55,8 @@ class AcsNavigator
         val mapName = GameMap.getNameVisually(DynamicConfig.team, DynamicConfig.isStartingLeft)
         val mapOrNull = GameMap.getMapByName(mapName)
         if (mapOrNull == null) {
-            this.telemetry.fatal("Code error: There is no map with name $mapName")
-            throw RuntimeException("Code error")
+            this.telemetry.fatal("Hard-coded error: There is no map with name $mapName")
+            throw RuntimeException("Hard-coded error")
         }
         this.map = mapOrNull
 
@@ -67,7 +67,7 @@ class AcsNavigator
     // in the drivetrain. This will create a mismatch between where the robot thinks it is and where
     // it actually is.
     // If turn() was to be called, though, it must return to its original orientation before this
-    //   navigator is called again
+    //   navigator is called again.
 
     @Throws(NoSuchFieldException::class)
     fun goToPosition(mapName: String, power: Double) {
@@ -81,6 +81,9 @@ class AcsNavigator
             move(driveVector, power)
             turn(target.orientation, power)
         }
+
+        // Now update our current position as the new position
+        currentPos = target
     }
 
     @Throws(NoSuchFieldException::class)
