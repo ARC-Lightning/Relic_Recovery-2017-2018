@@ -80,6 +80,6 @@ class Hardware(
          * This should never be referenced in "static" blocks, variable declarations, or any other
          *   execution context before the init() of an OpMode (i.e. the creation of a Hardware instance)
          */
-        var instance: Hardware? = null
+        lateinit var instance: Hardware
     }
 }

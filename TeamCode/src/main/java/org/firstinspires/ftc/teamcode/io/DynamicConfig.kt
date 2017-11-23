@@ -57,7 +57,7 @@ object DynamicConfig {
     }
 
     private fun updateTelemetry(name: String, newValue: Any) {
-        Hardware.instance!!.telemetry.data("DynConf: $name now", newValue)
+        Hardware.instance.telemetry.data("DynConf: $name now", newValue)
     }
 }
 

@@ -284,6 +284,9 @@ class Drivetrain(
         if (radians < 0.0)
             tickMagnitude *= -1
 
+        // Wait for other motor operations to complete
+        while (isBusy);
+
         forEachOf(
                 IDrivetrain.MotorPtr.FRONT_RIGHT,
                 IDrivetrain.MotorPtr.REAR_RIGHT
@@ -311,8 +314,8 @@ class Drivetrain(
                 startTurn(-defaultPower)
             }
 
-    override fun startTurn(power_: Double) {
-        val power = Range.clip(power_, -1.0, 1.0)
+    override fun startTurn(power: Double) {
+        val validPower = Range.clip(power, -1.0, 1.0)
 
         forEachOf(
                 IDrivetrain.MotorPtr.FRONT_RIGHT,
@@ -320,7 +323,7 @@ class Drivetrain(
         ) {
 
             it.mode = DcMotor.RunMode.RUN_WITHOUT_ENCODER
-            it.power = power
+            it.power = validPower
 
         }
 
@@ -329,7 +332,7 @@ class Drivetrain(
                 IDrivetrain.MotorPtr.REAR_LEFT
         ) {
             it.mode = DcMotor.RunMode.RUN_WITHOUT_ENCODER
-            it.power = -power
+            it.power = -validPower
         }
     }
     /**
