@@ -14,6 +14,7 @@ import org.firstinspires.ftc.teamcode.telemetry.ITelemetry
  *
  * @constructor Creates a clamp controller with the given servos
  */
+@Deprecated(message = "The team has abandoned this design for a more radical one")
 class GlyphClamp(
         var leftServo: Servo,
         var rightServo: Servo,

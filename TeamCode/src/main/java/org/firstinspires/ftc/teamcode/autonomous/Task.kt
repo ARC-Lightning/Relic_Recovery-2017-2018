@@ -1,9 +1,13 @@
 package org.firstinspires.ftc.teamcode.autonomous
 
 /**
- * Created by michael on 11/21/17.
+ * An annotation class that allows tasks (functions) to have metadata, aiding decisions.
+ *
+ * @author Michael Peng
+ * For team: 4410 (Lightning)
+ *
+ * FIRST - Gracious Professionalism
  */
-
 @Retention(AnnotationRetention.RUNTIME)
 annotation class Task(
         /**

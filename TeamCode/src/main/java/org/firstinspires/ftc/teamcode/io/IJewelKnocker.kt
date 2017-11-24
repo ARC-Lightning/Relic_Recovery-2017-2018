@@ -2,7 +2,7 @@ package org.firstinspires.ftc.teamcode.io
 
 import com.qualcomm.robotcore.hardware.ColorSensor
 import com.qualcomm.robotcore.hardware.Servo
-import org.firstinspires.ftc.teamcode.TeamColor
+import org.firstinspires.ftc.teamcode.AllianceColor
 
 /**
  * The knocker of jewels, implemented for use in Autonomous.
@@ -28,13 +28,13 @@ interface IJewelKnocker {
      * Reads from the ColorSensor and returns the TeamColor to which the values are closest.
      * @return The team color at which the color sensor seems to be looking, or null if the data is confusing.
      */
-    fun detect(): TeamColor?
+    fun detect(): AllianceColor?
 
     /**
-     * Moves or turns the robot in a way that knocks off a jewel, in the direction specified by the
+     * Moves or turns the robot in a way that knocks off a jewel in the direction specified by the
      * parameter.
      *
-     * @param towardDetectedJewel True if the jewel that the color sensor is looking at shall be knocked off
+     * @param towardDetectedJewel Whether the jewel whose color is detected by color sensor shall be knocked off
      */
     fun removeJewel(towardDetectedJewel: Boolean)
 

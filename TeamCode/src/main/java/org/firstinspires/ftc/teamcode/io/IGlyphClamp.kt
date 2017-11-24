@@ -8,6 +8,7 @@ package org.firstinspires.ftc.teamcode.io
  *
  * FIRST - Gracious Professionalism
  */
+@Deprecated(message = "This design has been abandoned by the team in favor of a more radical design.")
 interface IGlyphClamp {
 
     /**

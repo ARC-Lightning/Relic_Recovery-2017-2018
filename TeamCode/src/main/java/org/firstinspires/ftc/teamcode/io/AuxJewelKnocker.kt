@@ -2,7 +2,7 @@ package org.firstinspires.ftc.teamcode.io
 
 import com.qualcomm.robotcore.hardware.ColorSensor
 import com.qualcomm.robotcore.hardware.Servo
-import org.firstinspires.ftc.teamcode.TeamColor
+import org.firstinspires.ftc.teamcode.AllianceColor
 import org.firstinspires.ftc.teamcode.drivetrain.IDrivetrain
 import org.firstinspires.ftc.teamcode.telemetry.ITelemetry
 import org.locationtech.jts.math.Vector2D
@@ -43,13 +43,13 @@ class AuxJewelKnocker(val telemetry: ITelemetry,
         arm.position = loweredPosition
     }
 
-    override fun detect(): TeamColor? {
+    override fun detect(): AllianceColor? {
         val isBlue = color.blue() > colorThreshold
         val isRed = color.red() > colorThreshold
 
         return when {
-            isBlue && !isRed -> TeamColor.BLUE
-            isRed && !isBlue -> TeamColor.RED
+            isBlue && !isRed -> AllianceColor.BLUE
+            isRed && !isBlue -> AllianceColor.RED
             else -> {
                 telemetry.error("ColorSensor data is confusing")
                 telemetry.data("RED", color.red())

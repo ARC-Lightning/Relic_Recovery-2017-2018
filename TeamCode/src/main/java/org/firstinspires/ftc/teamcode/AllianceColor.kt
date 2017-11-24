@@ -8,12 +8,12 @@ package org.firstinspires.ftc.teamcode
  *
  * FIRST - Gracious Professionalism
  */
-enum class TeamColor {
+enum class AllianceColor {
     RED,
     BLUE;
 
     companion object {
-        fun oppositeOf(color: TeamColor) = when (color) {
+        fun oppositeOf(color: AllianceColor) = when (color) {
             RED -> BLUE
             BLUE -> RED
         }

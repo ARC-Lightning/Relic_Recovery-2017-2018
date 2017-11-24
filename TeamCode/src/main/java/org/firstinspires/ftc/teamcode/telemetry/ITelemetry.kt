@@ -12,6 +12,19 @@ package org.firstinspires.ftc.teamcode.telemetry
  * FIRST - Gracious Professionalism
  */
 interface ITelemetry {
+
+    /**
+     * Determines whether written data will be cleared in the buffer when flush() is called.
+     * Should be mapped to setAutoClear and isAutoClear in FTC's API.
+     */
+    var autoClear: Boolean
+
+    /**
+     * Determines whether all written data will be flushed immediately, thus cancelling out the
+     * effect of calling flush() itself.
+     */
+    var autoUpdate: Boolean
+
     /**
      * Writes a message to telemetry.
      * Similar to addData()

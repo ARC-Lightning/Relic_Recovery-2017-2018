@@ -83,6 +83,10 @@ class AutonomousMain : LinearOpMode() {
             vuforia = Vuforia(this)
             decider = DecisionMaker()
 
+            // No need to hold telemetry data back in a LinearOpMode
+            hardware.telemetry.autoClear = false
+            hardware.telemetry.autoUpdate = true
+
         } catch (exc: Exception) {
             telemetry.addData("FATAL", "ERROR")
             telemetry.addData("Initialization failed", exc.message ?: "for a reason unknown to humankind")
@@ -92,7 +96,6 @@ class AutonomousMain : LinearOpMode() {
     }
 
     // Tasks
-    // TODO("Exception catching") Put task performing code in a try block and fail if an exception is caught
     // TODO("testing pending") Optimize reliability coefficients
 
     object Tasks {
@@ -107,7 +110,7 @@ class AutonomousMain : LinearOpMode() {
                 val colorDetected = detect() ?: return false
 
                 // Knock off the jewel of color opposite to the team we're on
-                removeJewel(colorDetected != DynamicConfig.team)
+                removeJewel(colorDetected != DynamicConfig.alliance)
 
                 raiseArm()
                 return true
@@ -129,12 +132,10 @@ class AutonomousMain : LinearOpMode() {
                 navigator.goToPosition("jewel-knock")
 
                 vuforia.startTracking()
-
                 vuMark = vuforia.readVuMark()
-
                 vuforia.stopTracking()
 
-                // If it's not unknown, it's successful
+                // If its representation is known, it's successful
                 return vuMark != RelicRecoveryVuMark.UNKNOWN
             }
         }

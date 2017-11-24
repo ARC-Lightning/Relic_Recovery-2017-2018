@@ -52,7 +52,7 @@ class AcsNavigator
 
     init {
         // Try getting the map, throwing a fatal error if the name does not exist
-        val mapName = GameMap.getNameVisually(DynamicConfig.team, DynamicConfig.isStartingLeft)
+        val mapName = GameMap.getNameVisually(DynamicConfig.alliance, DynamicConfig.isStartingLeft)
         val mapOrNull = GameMap.getMapByName(mapName)
         if (mapOrNull == null) {
             this.telemetry.fatal("Hard-coded error: There is no map with name $mapName")

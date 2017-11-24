@@ -1,7 +1,7 @@
 package org.firstinspires.ftc.teamcode.io
 
 import com.qualcomm.robotcore.hardware.Gamepad
-import org.firstinspires.ftc.teamcode.TeamColor
+import org.firstinspires.ftc.teamcode.AllianceColor
 import org.firstinspires.ftc.teamcode.teleop.GamepadRule
 
 /**
@@ -24,7 +24,7 @@ object DynamicConfig {
      */
     // -- START CONFIG PROPERTIES --
 
-    var team: TeamColor = TeamColor.RED
+    var alliance: AllianceColor = AllianceColor.RED
     var isStartingLeft: Boolean = true
 
     // -- END CONFIG PROPERTIES --
@@ -41,8 +41,8 @@ object DynamicConfig {
                 // Button X toggles team color
                 { pad: Gamepad -> pad.x } to { value ->
                     if (value) {
-                        team = TeamColor.oppositeOf(team)
-                        updateTelemetry("TeamColor", team)
+                        alliance = AllianceColor.oppositeOf(alliance)
+                        updateTelemetry("AllianceColor", alliance)
                     }
                 },
 

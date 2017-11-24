@@ -21,6 +21,8 @@ interface IVuforia {
     /**
      * Tries to read the VuMark that may be shown on camera.
      * May call RelicRecoveryVuMark.from(template).
+     *
+     * @return The VuMark that was read
      */
     fun readVuMark(): RelicRecoveryVuMark
 

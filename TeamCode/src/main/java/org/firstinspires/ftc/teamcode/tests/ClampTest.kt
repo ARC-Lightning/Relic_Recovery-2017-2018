@@ -15,6 +15,7 @@ import com.qualcomm.robotcore.hardware.Servo
  * FIRST - Gracious Professionalism
  */
 @TeleOp(name = "ClampTest", group = "Pragmaticos")
+@Deprecated(message = "The team has abandoned this design for a more radical one")
 class ClampTest : OpMode() {
 
     // -- SERVOS --

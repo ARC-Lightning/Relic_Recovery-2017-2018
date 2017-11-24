@@ -7,10 +7,54 @@ import org.locationtech.jts.math.Vector2D
  * The IDrivetrain interface describes the methods available from a drivetrain to other parts of the program.
  * The actual drivetrain manager shall implement this interface.
  *
- * Created by: Michael Peng
+ * @author Michael Peng
  * For team: Lightning (4410)
  *
  * FIRST - Gracious Professionalism
+ *
+ * <p>
+ * <h1>A WORD ON DIRECTIONS</h1>
+ *
+ * In this implementation of the Drivetrain interface, directions are represented similar to
+ * how a vector is represented mathematically. To understand this relationship, assume that the
+ * robot is at the origin on a four-quadrant 2D graph; The robot is facing up, or in the
+ * positive y direction. Moving forward is equivalent a directly upward vector, or `(0, 1)`. To
+ * strafe in the rear-leftServo direction, for example, use the vector `(-1, -1)`. Vectors have
+ * scale, so `-1 <= value <= 1` does not have to be true all the time. If the caller would like
+ * to move the robot a longer distance, just multiply the values.
+ *
+ * A complete mapping from direction to the corresponding 1-unit vector is provided below.
+ *
+ *  - ↑ = (0, 1)
+ *  - ↗ = (1, 1)
+ *  - → = (1, 0)
+ *  - ↘ = (1, -1)
+ *  - ↓ = (0, -1)
+ *  - ↙ = (-1, -1)
+ *  - ← = (-1, 0)
+ *  - ↖ = (-1, 1)
+ *
+ * <h2>Motivation</h2>
+ *
+ * This system provides the flexibility that allows path-finding algorithms to manipulate
+ * directions. For example, the forward and rightServo vectors can be summed to produce the up-rightServo
+ * diagonal vector.
+ *
+ * <h2>Synthetic Movements</h2>
+ *
+ * If you decide to send a vector like `(2, 1)` to `move()`, the robot will most likely move
+ * in a path that coincides with the vector segment (straight). By altering motor power, the robot
+ * is capable of moving in any direction.
+ *
+ * _These vectors are discouraged because there is no guarantee for the order in which the
+ * robot moves. This could potentially lead to conflict with obstacles._
+ *
+ * <h2>Technically...</h2>
+ *
+ * The vector is represented by a `Vector2D` object. This class is included with JTS Topology
+ * Suite. An enum-like class named `VectorDirection` is included with
+ * this interface for Don't-Let-Me-Think readable code, in which case the method will be
+ * invoked like this: `drivetrain.move(VectorDirection.FORWARD)`
  */
 interface IDrivetrain {
 
@@ -25,52 +69,6 @@ interface IDrivetrain {
      * a power value.
      */
     val defaultPower: Double
-    /*
-        # A WORD ON DIRECTIONS
-
-        In this implementation of the Drivetrain interface, directions are represented similar to
-        how a vector is represented mathematically. To understand this relationship, assume that the
-        robot is at the origin on a four-quadrant 2D graph; The robot is facing up, or in the
-        positive y direction. Moving forward is equivalent a directly upward vector, or `(0, 1)`. To
-        strafe in the rear-leftServo direction, for example, use the vector `(-1, -1)`. Vectors have
-        scale, so `-1 <= value <= 1` does not have to be true all the time. If the caller would like
-        to move the robot a longer distance, just multiply the values.
-
-        A complete mapping from direction to the corresponding 1-unit vector is provided below.
-
-        ↑ = (0, 1)
-        ↗ = (1, 1)
-        → = (1, 0)
-        ↘ = (1, -1)
-        ↓ = (0, -1)
-        ↙ = (-1, -1)
-        ← = (-1, 0)
-        ↖ = (-1, 1)
-
-        ## Motivation
-
-        This system provides the flexibility that allows path-finding algorithms to manipulate
-        directions. For example, the forward and rightServo vectors can be summed to produce the up-rightServo
-        diagonal vector.
-
-        ## Synthetic Movements
-
-        If you decide to send a vector like `(2, 1)` to the drivetrain manager, it will be broken
-        down into two UNORDERED parts: `(1, 1)` and `(1, 0)`. Because the robot can only move in 8
-        directions, any vector that is not a uniform scale of any vector in the list above gets
-        broken down into multiple motions. `(2, 1)` could make the robot move in the up-rightServo
-        direction, stop, then move forward.
-
-        **These vectors are discouraged because there is no guarantee for the order in which the
-        robot moves. This could potentially lead to conflict with obstacles.**
-
-        ## Technically...
-
-        The vector is represented by a `Vector2D` object. This class is included with JTS Topology
-        Suite. An enum-like class named `VectorDirection` is included with
-        this interface for Don't-Let-Me-Think readable code, in which case the method will be
-        invoked like this: `drivetrain.move(VectorDirection.FORWARD)`
-     */
 
     /**
      * A class containing vectors representing all of 8 directions in which the robot is capable of
@@ -142,7 +140,7 @@ interface IDrivetrain {
      * Turns the robot in position for the given amount of radians (of change applied to the robot's
      * orientation) at the default motor power.
      * Ideal for Autonomous
-     * @param radians The amount of radians to rotate the robot for, [-2π, 2π]
+     * @param radians The amount of radians to rotate the robot for, [[-2π, 2π]]
      */
     fun turn(radians: Double)
 
@@ -150,7 +148,7 @@ interface IDrivetrain {
      * Turns the robot in position for the given amount of radians (of change applied to the robot's
      * orientation) at the given motor power.
      * Ideal for Autonomous
-     * @param radians The amount of radians to rotate the robot for, [-2π, 2π]
+     * @param radians The amount of radians to rotate the robot for, [[-2π, 2π]]
      * @param power The power multiplier to set the motor to, (0, 1]
      */
     fun turn(radians: Double, power: Double)
@@ -173,7 +171,7 @@ interface IDrivetrain {
     /**
      * Gets the DcMotor object at the specified position relative to the robot.
      * @param ptr The motor's position relative to the robot
-     * @return The DcMotor object representing the specified motor
+     * @return The specified motor
      */
     fun getMotor(ptr: MotorPtr): DcMotor
 }

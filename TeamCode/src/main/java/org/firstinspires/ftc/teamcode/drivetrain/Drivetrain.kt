@@ -24,14 +24,18 @@ class Drivetrain(
          */
         private val motors: Map<IDrivetrain.MotorPtr, DcMotor>) : IDrivetrain {
 
-    // Reverse the direction of motors on the right.
     init {
+        // Reverse the direction of motors on the right.
         forEachOf(
                 IDrivetrain.MotorPtr.FRONT_RIGHT,
                 IDrivetrain.MotorPtr.REAR_RIGHT
         ) {
             it.direction = DcMotorSimple.Direction.REVERSE
         }
+
+        // Preciseness of movement is crucial in AcsNavigator.
+        // Don't let the motors drift.
+        motors.values.forEach { it.zeroPowerBehavior = DcMotor.ZeroPowerBehavior.BRAKE }
     }
 
     // CONFIGURATION
@@ -200,13 +204,15 @@ class Drivetrain(
         checkPower(power)
         while (this.isBusy);
 
-        // Vector with endpoint congruent to origin means no movement
+        // Vector with endpoint as origin means no movement
         if (vector.x == 0.0 && vector.y == 0.0)
             return
 
         setMotorMode(DcMotor.RunMode.RUN_USING_ENCODER)
 
+        // Determine the positional targets for each motor pair
         directionToRelativeTargets(vector).forEach { (pair, position) ->
+            // Set the relative target position of all motors in the pair
             pair.motors.forEach {
                 setRelativeTargetPosition(getMotor(it), position)
             }

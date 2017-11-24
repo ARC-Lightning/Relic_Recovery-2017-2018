@@ -1,6 +1,6 @@
 package org.firstinspires.ftc.teamcode.acs
 
-import org.firstinspires.ftc.teamcode.TeamColor
+import org.firstinspires.ftc.teamcode.AllianceColor
 import org.locationtech.jts.algorithm.Angle
 import org.locationtech.jts.geom.Coordinate
 import org.locationtech.jts.geom.GeometryFactory
@@ -39,7 +39,8 @@ private constructor(
          * The positions available in this map. Each position is given a name for reference purposes.
          * These positions may only be valid on this GameMap.
          */
-        private var positions: Map<String, Position>) : IGameMap {
+        private var positions: Map<String, Position>
+) : IGameMap {
 
 
     /**
@@ -181,9 +182,18 @@ private constructor(
          */
         fun getMapByName(name: String): IGameMap? = maps[name]
 
-        fun getNameVisually(color: TeamColor, isLeft: Boolean): String = when (color) {
-            TeamColor.RED -> if (isLeft) "TopLeft" else "BottomLeft"
-            TeamColor.BLUE -> if (isLeft) "BottomRight" else "TopRight"
+        /**
+         * Depending on the robot's position in our drivers' perspective AND the team we're on,
+         * determine which GameMap we should use.
+         *
+         * @param color The color of the alliance we're in
+         * @param isLeft Whether the robot is on the left side of our drivers' perspective
+         *
+         * @return The name of the corresponding GameMap to use
+         */
+        fun getNameVisually(color: AllianceColor, isLeft: Boolean): String = when (color) {
+            AllianceColor.RED -> if (isLeft) "TopLeft" else "BottomLeft"
+            AllianceColor.BLUE -> if (isLeft) "BottomRight" else "TopRight"
         }
     }
 }
