@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.autonomous
 
+import com.qualcomm.robotcore.util.ElapsedTime
 import kotlin.reflect.KCallable
 import kotlin.reflect.KClass
 import kotlin.reflect.full.findAnnotation
@@ -18,15 +19,19 @@ class DecisionMaker(tasks: KClass<AutonomousMain.Tasks> = AutonomousMain.Tasks::
     // CONFIGURATIONS
     companion object {
         /**
-         * The "urgency coefficient", [[0, 1]], which describes how the preference factor of tasks
-         * decay when they are executed in the future.
+         * The discount factor ("urgency coefficient"), [[0, 1]], describes how the preference
+         * factor of tasks decay when they are planned to be executed in the future.
          *
-         * A discount factor of 1 means the millionth task executed has the same preference as the
-         * same task executed right now.
-         *
-         * A discount factor of 0 means the second task executed has a preference of 0.
+         * This lambda determines the discount factor, optionally dynamically with dependence on how
+         * many seconds have passed since the Autonomous period began.
          */
-        val discountFactor = 0.8
+        // The current lambda is linear, equivalent to f(x)=1 - x/30, where x is seconds elapsed
+        val discountFactor = { timer: ElapsedTime -> 1.0 - (timer.seconds() / periodDuration) }
+
+        /**
+         * The duration of the Autonomous period in seconds.
+         */
+        private val periodDuration = 30.0
     }
 
     /**
@@ -43,6 +48,12 @@ class DecisionMaker(tasks: KClass<AutonomousMain.Tasks> = AutonomousMain.Tasks::
      * @throws NullPointerException If the callable does not have a Task annotation
      */
     private val KCallable<*>.metadata: Task get() = findAnnotation()!!
+
+    /**
+     * A running timer, which is used for dynamic discountFactor determination.
+     * The timer starts when the DecisionMaker is instantiated.
+     */
+    private val timer: ElapsedTime = ElapsedTime()
 
     /**
      * A to-do list of tasks that are not executed yet.
@@ -107,7 +118,7 @@ class DecisionMaker(tasks: KClass<AutonomousMain.Tasks> = AutonomousMain.Tasks::
 
                 nextAction.priority *
                         nextAction.reliability *
-                        Math.pow(discountFactor, depth.toDouble())
+                        Math.pow(discountFactor(timer), depth.toDouble())
             }
             else -> nextStates(state).map { value(it, depth + 1) }.average()
         }

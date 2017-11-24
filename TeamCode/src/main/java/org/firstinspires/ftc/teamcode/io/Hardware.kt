@@ -31,7 +31,7 @@ class Hardware(
         try {
 
             // NOTE: A with block is impractical in this situation due to prohibited initialization
-            // of vals in a block. Kotlinc will be dissatisfied.
+            // of vals in a block. Kotlinc will complain.
 
             // Mecanum wheels
             drivetrain = Drivetrain(motorPower, mapOf(
