@@ -46,14 +46,14 @@ class AutonomousMain : LinearOpMode() {
 
         with(hardware) {
             // The glyph clamp will be preloaded with a glyph. Close the clamp to hold it.
-            clamp.leftArm = true
-            clamp.rightArm = true
+            //clamp.leftArm = true
+            //clamp.rightArm = true
         }
 
         waitForStart()
 
         // Take tasks from the decider and execute them
-        while (!decider.isDone) {
+        while (!decider.isDone && !isStopRequested) {
             val nextTask = decider.nextTask()!!
 
             hardware.telemetry.write("Performing next task", nextTask)
@@ -87,9 +87,11 @@ class AutonomousMain : LinearOpMode() {
             hardware.telemetry.autoClear = false
             hardware.telemetry.autoUpdate = true
 
+            hardware.telemetry.data("Tasks", decider.nextTasks)
         } catch (exc: Exception) {
             telemetry.addData("FATAL", "ERROR")
             telemetry.addData("Initialization failed", exc.message ?: "for a reason unknown to humankind")
+            telemetry.update()
             return false
         }
         return true
@@ -132,6 +134,10 @@ class AutonomousMain : LinearOpMode() {
                 navigator.goToPosition("jewel-knock")
 
                 vuforia.startTracking()
+
+                // Allow camera to focus
+                opMode.sleep(2000)
+
                 vuMark = vuforia.readVuMark()
                 vuforia.stopTracking()
 
@@ -150,7 +156,8 @@ class AutonomousMain : LinearOpMode() {
                 RelicRecoveryVuMark.UNKNOWN, null -> "load-column1"
             })
             // TODO("waiting for hardware") How will the new jewel system score in autonomous? Waiting for design
-            return false
+            opMode.hardware.telemetry.error("Cannot telepathically detect glyph scoring plans")
+            return true
         }
     }
 }

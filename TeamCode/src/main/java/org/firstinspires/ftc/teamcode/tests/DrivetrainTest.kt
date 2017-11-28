@@ -21,6 +21,9 @@ class DrivetrainTest : OpMode() {
     var frontRight: DcMotor? = null
     var rearLeft: DcMotor? = null
     var rearRight: DcMotor? = null
+    val allMotors = arrayOf(frontLeft, frontRight, rearLeft, rearRight)
+
+    var usingEncoders = false
 
     // Quick reference for the unacquainted
     val reference: List<Pair<String, String>> = listOf(
@@ -32,6 +35,7 @@ class DrivetrainTest : OpMode() {
             "Front right" to "Ⓑ",
             "Rear left" to "Ⓧ",
             "Rear right" to "Ⓐ",
+            "Toggle whether encoders are used" to "Right Bumper",
             "-----" to "-----",
             "Disclaimer" to "May be addictive",
             "-----" to "-----"
@@ -54,11 +58,34 @@ class DrivetrainTest : OpMode() {
         map(frontRight, gamepad1.b)
         map(rearLeft, gamepad1.x)
         map(rearRight, gamepad1.a)
+
+        if (gamepad1.right_bumper)
+            onToggleEncoders()
+
+        telemetry.update()
     }
 
     fun valueOfBool(value: Boolean): Double = if (value) 0.4 else 0.0
 
     fun map(motor: DcMotor?, value: Boolean) {
-        motor!!.power = valueOfBool(value)
+        if (usingEncoders && value && !motor!!.isBusy) {
+            motor.targetPosition = motor.currentPosition + 10
+            motor.power = 0.4
+        } else if (!usingEncoders) {
+            motor!!.power = valueOfBool(value)
+        }
+    }
+
+    fun onToggleEncoders() {
+        allMotors.forEach {
+            it!!.mode =
+                    if (usingEncoders)
+                        DcMotor.RunMode.RUN_WITHOUT_ENCODER
+                    else
+                        DcMotor.RunMode.RUN_TO_POSITION
+        }
+
+        usingEncoders = !usingEncoders
+        telemetry.addData("UsingEncoders now", usingEncoders)
     }
 }

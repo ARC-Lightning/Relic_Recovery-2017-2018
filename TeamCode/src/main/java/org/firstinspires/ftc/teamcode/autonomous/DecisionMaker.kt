@@ -82,7 +82,7 @@ class DecisionMaker(tasks: KClass<AutonomousMain.Tasks> = AutonomousMain.Tasks::
             try {
 
                 // Reflection requires casting; if name in nextTasks, then it's in options
-                val result = options.getValue(name).call(opMode) as Boolean
+                val result = options.getValue(name).call(AutonomousMain.Tasks, opMode) as Boolean
 
                 // If the task was successful, then remove it from the set of remaining ones
                 if (result)
@@ -120,7 +120,7 @@ class DecisionMaker(tasks: KClass<AutonomousMain.Tasks> = AutonomousMain.Tasks::
                         nextAction.reliability *
                         Math.pow(discountFactor(timer), depth.toDouble())
             }
-            else -> nextStates(state).map { value(it, depth + 1) }.average()
+            else -> nextStates(state).map { value(it, depth + 1) }.sum()
         }
 
         if (this.isDone)

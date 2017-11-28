@@ -71,7 +71,8 @@ private constructor(
                                 Coordinate(24.0 * 3, 24.0 * 3),
                                 Coordinate(24.0, 24.0 * 3),
                                 Coordinate(24.0, 24.0 * 2),
-                                Coordinate(0.0, 24.0))),
+                                Coordinate(0.0, 24.0),
+                                Coordinate(0.0, 0.0))),
                         mapOf(),
                         mapOf(
                                 // TODO Make fine adjustments to these coordinates
@@ -101,7 +102,8 @@ private constructor(
                                 Coordinate(24.0 * 3, 24.0),
                                 Coordinate(24.0 * 2, 24.0 * 2),
                                 Coordinate(24.0 * 2, 24.0 * 3),
-                                Coordinate(0.0, 24.0 * 3)
+                                Coordinate(0.0, 24.0 * 3),
+                                Coordinate(0.0, 0.0)
                         )),
                         mapOf(),
                         mapOf(
@@ -131,7 +133,8 @@ private constructor(
                                 Coordinate(24.0 * 3, 0.0),
                                 Coordinate(24.0 * 3, 24.0 * 2),
                                 Coordinate(24.0 * 2, 24.0 * 3),
-                                Coordinate(0.0, 24.0 * 3)
+                                Coordinate(0.0, 24.0 * 3),
+                                Coordinate(0.0, 0.0)
                         )),
                         mapOf(),
                         mapOf(
@@ -160,7 +163,8 @@ private constructor(
                                 Coordinate(24.0 * 3, 0.0),
                                 Coordinate(24.0 * 3, 24.0 * 3),
                                 Coordinate(24.0, 24.0 * 3),
-                                Coordinate(0.0, 24.0 * 2)
+                                Coordinate(0.0, 24.0 * 2),
+                                Coordinate(0.0, 0.0)
                         )),
                         mapOf(),
                         mapOf(
