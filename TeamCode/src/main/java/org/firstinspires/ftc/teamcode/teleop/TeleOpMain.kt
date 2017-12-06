@@ -31,13 +31,15 @@ class TeleOpMain : OpMode() {
         val clampLiftPower = 0.3
     }
 
-    lateinit private var bot: Hardware
     lateinit private var padListener: GamepadListener
 
     override fun init() {
         // Initialize systems
-        bot = Hardware(this, Config.motorPower)
+        Hardware.init(this, Config.motorPower)
         padListener = GamepadListener(gamepad1, DynamicConfig.Mapping.mappings)
+
+        // Collector flywheel mechanism will be folded - release it when initializing
+        Hardware.glypher.unfoldCollector()
     }
 
     override fun init_loop() {
@@ -46,7 +48,7 @@ class TeleOpMain : OpMode() {
 
     override fun loop() {
         // Gamepad mappings
-        with(bot) {
+        with(Hardware) {
             fun Boolean.int() = if (this) 1.0 else 0.0
 
             with(gamepad1) {
@@ -68,10 +70,12 @@ class TeleOpMain : OpMode() {
             }
 
             with(gamepad2) {
-                // Glyph clamp
+
+                // Collector will be folded - press START to release it
+                // Glyph
                 fun clampBind(close: Boolean, open: Boolean, current: Boolean)
                         = current != (close != open && current != open)
-                clamp.leftArm = clampBind(
+                /*clamp.leftArm = clampBind(
                         left_bumper, left_trigger > 0.3, clamp.leftArm)
                 clamp.rightArm = clampBind(
                         right_bumper, right_trigger > 0.3, clamp.rightArm)
@@ -80,12 +84,14 @@ class TeleOpMain : OpMode() {
                 val liftPower = (dpad_up.int() * Config.clampLiftPower) -
                         (dpad_down.int() * Config.clampLiftPower)
                 clamp.liftPower = liftPower
-                telemetry.write("Lift power", liftPower.toString())
+                telemetry.write("Lift power", liftPower.toString())*/
+                // TODO Need to determine glyph mechanism controls with drivers
+
             }
 
         }
 
         // Messages only pertain to one loop
-        bot.telemetry.flush()
+        Hardware.telemetry.flush()
     }
 }

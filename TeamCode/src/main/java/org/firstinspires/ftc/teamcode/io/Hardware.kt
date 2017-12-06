@@ -16,54 +16,56 @@ import org.firstinspires.ftc.teamcode.telemetry.Telemetry
  *
  * FIRST - Gracious Professionalism
  */
-class Hardware(
-        opMode: OpMode,
-        motorPower: Double
-) {
+object Hardware {
 
-    val drivetrain: IDrivetrain
-    val telemetry: ITelemetry
-    val clamp: IGlyphClamp
-    val knocker: IJewelKnocker
+    lateinit var opMode: OpMode
+    var motorPower: Double = 0.8
 
-    init {
+    lateinit var drivetrain: IDrivetrain
+    lateinit var telemetry: ITelemetry
+    lateinit var glypher: GlyphManipulator
+    lateinit var knocker: IJewelKnocker
+
+    // LATEINIT - OpModes MUST initialize ASAP using this function, otherwise expect NPEs!
+    fun init(_opMode: OpMode, _motorPower: Double) {
+
+        // Assign to lateinit (has to stay above any other initialization procedure)
+        opMode = _opMode
+        motorPower = _motorPower
+
         telemetry = Telemetry(opMode.telemetry)
+
         try {
+            with(opMode.hardwareMap) {
+                // Mecanum wheels
+                drivetrain = Drivetrain(motorPower, mapOf(
+                        IDrivetrain.MotorPtr.FRONT_LEFT to dcMotor.get("FrontLeft"),
+                        IDrivetrain.MotorPtr.FRONT_RIGHT to dcMotor.get("FrontRight"),
+                        IDrivetrain.MotorPtr.REAR_LEFT to dcMotor.get("RearLeft"),
+                        IDrivetrain.MotorPtr.REAR_RIGHT to dcMotor.get("RearRight")
+                ))
 
-            // NOTE: A with block is impractical in this situation due to prohibited initialization
-            // of vals in a block. Kotlinc will complain.
+                // GlyphManipulator instance
+                glypher = GlyphManipulator(
+                        collectors = setOf(
+                                dcMotor.get("FlywheelLeft"),
+                                dcMotor.get("FlywheelRight")
+                        ),
+                        bucketLifts = setOf(
+                                dcMotor.get("BucketLiftLeft"),
+                                dcMotor.get("BucketLiftRight")
+                        ),
+                        bucketPour = servo.get("BucketPour"),
+                        bucketClamp = servo.get("BucketClamp"),
+                        collectorFolder = servo.get("CollectorFold"))
 
-            // Mecanum wheels
-            drivetrain = Drivetrain(motorPower, mapOf(
-                    IDrivetrain.MotorPtr.FRONT_LEFT to opMode.hardwareMap.dcMotor.get("FrontLeft"),
-                    IDrivetrain.MotorPtr.FRONT_RIGHT to opMode.hardwareMap.dcMotor.get("FrontRight"),
-                    IDrivetrain.MotorPtr.REAR_LEFT to opMode.hardwareMap.dcMotor.get("RearLeft"),
-                    IDrivetrain.MotorPtr.REAR_RIGHT to opMode.hardwareMap.dcMotor.get("RearRight")
-            ))
-
-            // GlyphClamp servos
-            val leftClamp = opMode.hardwareMap.servo.get("LeftClamp")
-            val rightClamp = opMode.hardwareMap.servo.get("RightClamp")
-
-            // GlyphClampElevator motor
-            val clampLift = opMode.hardwareMap.dcMotor.get("ClampLift")
-
-            // GlyphClamp instance
-            clamp = GlyphClamp(
-                    leftClamp,
-                    rightClamp,
-                    clampLift,
-                    telemetry
-            )
-
-            // JewelKnocker
-            knocker = AuxJewelKnocker(
-                    telemetry,
-                    drivetrain,
-                    color = opMode.hardwareMap.colorSensor.get("JewelSensor"),
-                    arm = opMode.hardwareMap.servo.get("JewelArm"))
-
-            instance = this
+                // JewelKnocker
+                knocker = AuxJewelKnocker(
+                        telemetry,
+                        drivetrain,
+                        color = colorSensor.get("JewelSensor"),
+                        arm = servo.get("JewelArm"))
+            }
 
         } catch (exc: Exception) {
             telemetry.fatal(
@@ -74,12 +76,4 @@ class Hardware(
 
     }
 
-    companion object {
-        /**
-         * A singleton copy of the active hardware.
-         * This should never be referenced in "static" blocks, variable declarations, or any other
-         *   execution context before the init() of an OpMode (i.e. the creation of a Hardware instance)
-         */
-        lateinit var instance: Hardware
-    }
 }

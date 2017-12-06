@@ -28,7 +28,6 @@ class AutonomousMain : LinearOpMode() {
         val motorPower = 0.9
     }
 
-    lateinit var hardware: Hardware
     lateinit var navigator: AcsNavigator
     lateinit var vuforia: IVuforia
     lateinit var decider: DecisionMaker
@@ -44,10 +43,9 @@ class AutonomousMain : LinearOpMode() {
     override fun runOpMode() {
         if (!initAll()) return
 
-        with(hardware) {
+        with(Hardware) {
             // The glyph clamp will be preloaded with a glyph. Close the clamp to hold it.
-            //clamp.leftArm = true
-            //clamp.rightArm = true
+            Hardware.glypher.bucketClamping = true
         }
 
         waitForStart()
@@ -56,10 +54,10 @@ class AutonomousMain : LinearOpMode() {
         while (!decider.isDone && !isStopRequested) {
             val nextTask = decider.nextTask()!!
 
-            hardware.telemetry.write("Performing next task", nextTask)
+            Hardware.telemetry.write("Performing next task", nextTask)
             val result = decider.doTask(nextTask, this)
 
-            hardware.telemetry.data("Task $nextTask successful?",
+            Hardware.telemetry.data("Task $nextTask successful?",
                     result ?: "there was a problem, so no")
         }
     }
@@ -77,17 +75,20 @@ class AutonomousMain : LinearOpMode() {
      */
     private fun initAll(): Boolean {
         try {
+            // PRE-INIT - must be above all others
+            Hardware.init(this, motorPower)
 
-            hardware = Hardware(this, motorPower)
-            navigator = AcsNavigator(hardware.telemetry, hardware.drivetrain)
-            vuforia = Vuforia(this)
-            decider = DecisionMaker()
+            with(Hardware) {
+                navigator = AcsNavigator(telemetry, drivetrain)
+                vuforia = Vuforia(opMode)
+                decider = DecisionMaker()
 
-            // No need to hold telemetry data back in a LinearOpMode
-            hardware.telemetry.autoClear = false
-            hardware.telemetry.autoUpdate = true
+                // No need to hold telemetry data back in a LinearOpMode
+                Hardware.telemetry.autoClear = false
+                Hardware.telemetry.autoUpdate = true
 
-            hardware.telemetry.data("Tasks", decider.nextTasks)
+                Hardware.telemetry.data("Tasks", decider.nextTasks)
+            }
         } catch (exc: Exception) {
             telemetry.addData("FATAL", "ERROR")
             telemetry.addData("Initialization failed", exc.message ?: "for a reason unknown to humankind")
@@ -105,7 +106,7 @@ class AutonomousMain : LinearOpMode() {
         @Task(priority = 30.0 / 85.0, reliability = 0.75)
         fun knockJewel(opMode: AutonomousMain): Boolean {
             opMode.navigator.goToPosition("jewel-knock")
-            with(opMode.hardware.knocker) {
+            with(Hardware.knocker) {
                 lowerArm()
 
                 // If no concrete conclusion arises from the data, fail this task
@@ -155,8 +156,11 @@ class AutonomousMain : LinearOpMode() {
             // TODO("testing pending") Loading into which column is most reliable?
                 RelicRecoveryVuMark.UNKNOWN, null -> "load-column1"
             })
-            // TODO("waiting for hardware") How will the new jewel system score in autonomous? Waiting for design
-            opMode.hardware.telemetry.error("Cannot telepathically detect glyph scoring plans")
+
+            Hardware.glypher.bucketPouring = true
+            Hardware.glypher.bucketClamping = false
+            Hardware.glypher.bucketPouring = false
+
             return true
         }
     }

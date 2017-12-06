@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.autonomous
 
 import com.qualcomm.robotcore.util.ElapsedTime
+import org.firstinspires.ftc.teamcode.io.Hardware
 import kotlin.reflect.KCallable
 import kotlin.reflect.KClass
 import kotlin.reflect.full.findAnnotation
@@ -90,7 +91,7 @@ class DecisionMaker(tasks: KClass<AutonomousMain.Tasks> = AutonomousMain.Tasks::
 
                 result
             } catch (exc: Exception) {
-                opMode.hardware.telemetry.error("doTask exception: ${exc.message}")
+                Hardware.telemetry.error("doTask exception: ${exc.message}")
                 null
             }
         } else null

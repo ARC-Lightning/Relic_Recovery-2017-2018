@@ -76,7 +76,7 @@ class DrivetrainTest : OpMode() {
         }
     }
 
-    fun onToggleEncoders() {
+    private fun onToggleEncoders() {
         allMotors.forEach {
             it!!.mode =
                     if (usingEncoders)

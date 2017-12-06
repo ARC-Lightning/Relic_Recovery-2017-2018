@@ -5,8 +5,12 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp
 import com.qualcomm.robotcore.hardware.ColorSensor
 
 /**
- * Created by michael on 11/26/17.
- * TODO document
+ * A utility program that reads color values from the sensor and writes them to telemetry.
+ *
+ * @author Michael Peng
+ * For team: 4410 (Lightning)
+ *
+ * FIRST - Gracious Professionalism
  */
 @TeleOp(name = "ColorTest", group = "Pragmaticos")
 class ColorTest : OpMode() {
