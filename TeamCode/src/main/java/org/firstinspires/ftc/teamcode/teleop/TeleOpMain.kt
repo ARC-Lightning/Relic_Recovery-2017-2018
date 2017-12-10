@@ -28,7 +28,13 @@ class TeleOpMain : OpMode() {
     object Config {
         val motorPower = 0.8
         val turnSpeed = 0.6
-        val clampLiftPower = 0.3
+        val glyphCollectorPower = 0.3
+        val bucketLiftPower = 0.2
+        val stickAxisToBinaryThreshold = 0.3
+    }
+
+    object InputColumns {
+        lateinit var collector: ToggleInputColumn
     }
 
     lateinit private var padListener: GamepadListener
@@ -44,12 +50,21 @@ class TeleOpMain : OpMode() {
 
     override fun init_loop() {
         padListener.update()
+
+        // Initialize toggle input surfaces, which currently includes collector use (A, gamepad 2)
+        InputColumns.collector = ToggleInputColumn { gamepad2.a }
+
     }
 
     override fun loop() {
         // Gamepad mappings
         with(Hardware) {
             fun Boolean.int() = if (this) 1.0 else 0.0
+            fun stickAxisToBinary(axisValue: Double, previous: Boolean): Boolean = when {
+                axisValue > Config.stickAxisToBinaryThreshold -> true
+                axisValue < -Config.stickAxisToBinaryThreshold -> false
+                else -> previous
+            }
 
             with(gamepad1) {
                 // Drivetrain movement
@@ -71,21 +86,26 @@ class TeleOpMain : OpMode() {
 
             with(gamepad2) {
 
-                // Collector will be folded - press START to release it
-                // Glyph
-                fun clampBind(close: Boolean, open: Boolean, current: Boolean)
-                        = current != (close != open && current != open)
-                /*clamp.leftArm = clampBind(
-                        left_bumper, left_trigger > 0.3, clamp.leftArm)
-                clamp.rightArm = clampBind(
-                        right_bumper, right_trigger > 0.3, clamp.rightArm)
+                // Collector unfolds when INIT is pressed
+                fun openCloseBind(close: Boolean, open: Boolean, current: Boolean) =
+                        current != (close != open && current != open)
 
-                // Glyph clamp lift
-                val liftPower = (dpad_up.int() * Config.clampLiftPower) -
-                        (dpad_down.int() * Config.clampLiftPower)
-                clamp.liftPower = liftPower
-                telemetry.write("Lift power", liftPower.toString())*/
-                // TODO Need to determine glyph mechanism controls with drivers
+                // Bucket lift -> up / down
+                glypher.liftPower = dpad_up.int() * Config.bucketLiftPower -
+                        dpad_down.int() * Config.bucketLiftPower
+
+                // Bucket pour -> Right stick y, forward = vertical, backward = laid down
+                glypher.bucketPouring =
+                        stickAxisToBinary(-right_stick_y.toDouble(), glypher.bucketPouring)
+
+                // Bucket clamping -> right bumper open, left bumper close
+                glypher.bucketClamping =
+                        openCloseBind(left_bumper, right_bumper, glypher.bucketClamping)
+
+                // Collector toggle between idle & pulling in -> A button
+                InputColumns.collector.onChange { _, new ->
+                    glypher.collectorPower = new.int() * Config.glyphCollectorPower
+                }
 
             }
 
@@ -93,5 +113,25 @@ class TeleOpMain : OpMode() {
 
         // Messages only pertain to one loop
         Hardware.telemetry.flush()
+    }
+
+    // A button toggle collector
+    // Up/down lift
+    // right stick up / down: bucket eject
+    // right bumper open, left bumper close clamp
+
+    class ToggleInputColumn(val input: () -> Boolean) {
+        var previousState = input()
+
+        fun onChange(todo: (Boolean, Boolean) -> Unit): Boolean {
+            val newState = input()
+
+            if (newState != previousState) {
+                todo(previousState, newState)
+                previousState = newState
+            }
+
+            return newState
+        }
     }
 }

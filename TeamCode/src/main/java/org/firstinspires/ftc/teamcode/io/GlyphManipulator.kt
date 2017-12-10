@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.io
 
 import com.qualcomm.robotcore.hardware.DcMotor
+import com.qualcomm.robotcore.hardware.DcMotorSimple
 import com.qualcomm.robotcore.hardware.Servo
 
 /**
@@ -13,10 +14,13 @@ import com.qualcomm.robotcore.hardware.Servo
  */
 class GlyphManipulator(
         override val collectors: Set<DcMotor>,
-        override val bucketLifts: Set<DcMotor>,
+        bucketLiftLeft: DcMotor,
+        bucketLiftRight: DcMotor,
         override val bucketPour: Servo,
         override val bucketClamp: Servo,
         override val collectorFolder: Servo) : IGlyphManipulator {
+
+    override val bucketLifts: Set<DcMotor> = setOf(bucketLiftLeft, bucketLiftRight)
 
     // CONFIGURATIONS
     companion object {
@@ -43,8 +47,12 @@ class GlyphManipulator(
     // Initialization should take place to ensure that shadow values and hardware state matches
     // before applyState is called.
     init {
-        Hardware.telemetry.write("GlyphManipulator", "Initializing")
         applyState()
+
+        // MOTOR-RUINING DANGER! Mirroring & connected lift motors require one to be reversed
+        bucketLiftRight.direction = DcMotorSimple.Direction.REVERSE
+
+        Hardware.telemetry.write("GlyphManipulator", "Initialized")
     }
 
     /**
@@ -90,6 +98,6 @@ class GlyphManipulator(
         }
 
     // FIXME Redundancy - Factory functions?
-    // Furthermore, this pattern can be found in some other hardware devices. If we could generalize
-    //   this pattern and reduce redundancy, that would be ideal.
+    // Furthermore, this pattern can be found in some other hardware devices. It would be ideal to
+    // generalize this pattern and reduce redundancy.
 }

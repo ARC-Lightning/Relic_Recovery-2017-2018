@@ -45,8 +45,8 @@ interface IGlyphManipulator {
      *
      * `true` = vertical, `false` = flat
      *
-     * A shadow variable is recommended for implementation.
      */
+    // A shadow variable is recommended for implementation.
     var bucketPouring: Boolean
 
     /**
@@ -54,7 +54,7 @@ interface IGlyphManipulator {
      *
      * `true` = pressing against glyph, `false` = released, not holding glyph
      *
-     * A shadow variable is recommended for implementation.
      */
+    // A shadow variable is recommended for implementation.
     var bucketClamping: Boolean
 }
