@@ -112,7 +112,7 @@ class DecisionMaker(tasks: KClass<AutonomousMain.Tasks> = AutonomousMain.Tasks::
         // This case should never be reached unless nextTasks is empty, which means everything
         //   has been accomplished and the robot is finished for autonomous.
         // Ideally it would be Double.MAX_VALUE, but due to suspected issues with overflowing
-        //   while calculating the average, it has been reduced to 10 million.
+        //   while calculating the sum, it has been reduced to 10 million.
             0 -> 10_000_000.0
             1 -> {
                 val nextAction = getMetadataFromName(state.first())

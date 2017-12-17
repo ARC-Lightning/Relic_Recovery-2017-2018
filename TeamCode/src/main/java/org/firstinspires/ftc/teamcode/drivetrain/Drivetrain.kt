@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.drivetrain
 import com.qualcomm.robotcore.hardware.DcMotor
 import com.qualcomm.robotcore.hardware.DcMotorSimple
 import com.qualcomm.robotcore.util.Range
+import org.firstinspires.ftc.teamcode.io.Hardware
 import org.locationtech.jts.algorithm.Angle
 import org.locationtech.jts.math.Vector2D
 
@@ -41,7 +42,7 @@ class Drivetrain(
     // CONFIGURATION
     companion object {
         private val TICKS_PER_ROTATION = 1440.0
-        private val INCHES_PER_ROTATION = 0.8
+        private val INCHES_PER_ROTATION = 4.5
         private val TICKS_PER_CIRCULAR_SPIN = TICKS_PER_ROTATION * 4
     }
     // END CONFIGURATION
@@ -144,9 +145,9 @@ class Drivetrain(
                 // For each pair -> power entry
                 .forEach { mapping ->
                     // TUDO(remove) bad debugging method below
-                    // Hardware.instance!!.telemetry.data(mapping.key.displayName, mapping.value * multiplier)
+                    Hardware.telemetry.data(mapping.key.displayName, mapping.value * multiplier)
                     forEachOf(*mapping.key.motors) {
-                        it.power = mapping.value * multiplier
+                        it.power = Range.clip(mapping.value * multiplier, -1.0, 1.0)
                     }
                 }
     }
@@ -157,20 +158,6 @@ class Drivetrain(
         //        1        1 rot      1 rot
         val relativeTicks = relativeInch / INCHES_PER_ROTATION * TICKS_PER_ROTATION
         motor.targetPosition = motor.currentPosition + Math.round(relativeTicks).toInt()
-    }
-
-    private fun normalizeRadian(radian_: Double): Double {
-        var radian: Double = radian_
-        // Until the radian is within range, make it closer to zero by leaps of 2pi.
-        while (radian > 2 * Math.PI || radian < -2 * Math.PI) {
-            radian += if (radian < 0)
-            // Add 2pi if radian negative
-                2 * Math.PI
-            else
-            // Subtract 2pi if radian positive
-                -2 * Math.PI
-        }
-        return radian
     }
 
     private fun forEachOf(vararg motors: IDrivetrain.MotorPtr, todo: (DcMotor) -> Unit) {
@@ -249,7 +236,8 @@ class Drivetrain(
      * @param power     Power, [0.0, 1.0], to set the necessary motors to
      */
     override fun startMove(direction: Vector2D, power: Double) {
-        this.setMotorMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER)
+        if (this.motors[IDrivetrain.MotorPtr.FRONT_LEFT]!!.mode != DcMotor.RunMode.RUN_WITHOUT_ENCODER) // TODO remove
+            this.setMotorMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER)
         this.setMotorPowers(direction, power)
     }
 
@@ -283,7 +271,7 @@ class Drivetrain(
 
         // Turn the radians into relative ticks for one side of the drivetrain, then the other side
         //   is the negation of that value.
-        var tickMagnitude = Math.round(Math.abs(normalizeRadian(radians)) / (2 * Math.PI) * TICKS_PER_CIRCULAR_SPIN)
+        var tickMagnitude = Math.round(Math.abs(Angle.normalize(radians)) / (2 * Math.PI) * TICKS_PER_CIRCULAR_SPIN)
 
         // tickMagnitude is always applied to the right side because the unit circle is
         //   counter-clockwise. If the input value is negative, then tickMagnitude shall be negated.

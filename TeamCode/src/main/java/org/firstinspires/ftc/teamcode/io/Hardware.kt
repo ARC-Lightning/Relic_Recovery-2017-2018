@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.io
 
 import com.qualcomm.robotcore.eventloop.opmode.OpMode
+import com.qualcomm.robotcore.hardware.DcMotorSimple
 import org.firstinspires.ftc.teamcode.drivetrain.Drivetrain
 import org.firstinspires.ftc.teamcode.drivetrain.IDrivetrain
 import org.firstinspires.ftc.teamcode.telemetry.ITelemetry
@@ -51,13 +52,14 @@ object Hardware {
                                 dcMotor.get("FlywheelLeft"),
                                 dcMotor.get("FlywheelRight")
                         ),
-                        bucketLifts = setOf(
-                                dcMotor.get("BucketLiftLeft"),
-                                dcMotor.get("BucketLiftRight")
-                        ),
+                        bucketLift = dcMotor.get("BucketLift"),
                         bucketPour = servo.get("BucketPour"),
                         bucketClamp = servo.get("BucketClamp"),
-                        collectorFolder = servo.get("CollectorFold"))
+                        collectorFolder = servo.get("CollectorFold"),
+                        collectorHugger = servo.get("CollectorHug"))
+
+                // Reverse direction of FlywheelRight motor due to symmetry
+                dcMotor.get("FlywheelRight").direction = DcMotorSimple.Direction.REVERSE
 
                 // JewelKnocker
                 knocker = AuxJewelKnocker(

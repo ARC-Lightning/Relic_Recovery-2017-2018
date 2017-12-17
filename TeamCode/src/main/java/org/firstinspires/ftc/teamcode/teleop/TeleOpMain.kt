@@ -27,14 +27,16 @@ class TeleOpMain : OpMode() {
     // Configuration values
     object Config {
         val motorPower = 0.8
-        val turnSpeed = 0.6
-        val glyphCollectorPower = 0.3
-        val bucketLiftPower = 0.2
+        val turnSpeed = 0.95
+        val glyphCollectorPower = 0.8
+        val bucketLiftPower = 0.3
         val stickAxisToBinaryThreshold = 0.3
     }
 
     object InputColumns {
-        lateinit var collector: ToggleInputColumn
+        lateinit var collectorIn: ChangeBasedInputColumn<Boolean>
+        lateinit var collectorOut: ChangeBasedInputColumn<Boolean>
+        lateinit var collectorHug: ChangeBasedInputColumn<Boolean>
     }
 
     lateinit private var padListener: GamepadListener
@@ -46,14 +48,18 @@ class TeleOpMain : OpMode() {
 
         // Collector flywheel mechanism will be folded - release it when initializing
         Hardware.glypher.unfoldCollector()
+
+        // Initialize toggle input surfaces, which currently includes collectorIn use (A, gamepad 2)
+        InputColumns.collectorIn = ChangeBasedInputColumn { gamepad2.a }
+        InputColumns.collectorOut = ChangeBasedInputColumn { gamepad2.b }
+        InputColumns.collectorHug = ChangeBasedInputColumn { gamepad2.y }
+
+        // Lock the jewel arm
+        Hardware.knocker.raiseArm()
     }
 
     override fun init_loop() {
         padListener.update()
-
-        // Initialize toggle input surfaces, which currently includes collector use (A, gamepad 2)
-        InputColumns.collector = ToggleInputColumn { gamepad2.a }
-
     }
 
     override fun loop() {
@@ -79,9 +85,12 @@ class TeleOpMain : OpMode() {
                 // The x axis of a stick on the gamepad is positive when it is to the right.
                 //   Since positive power in startTurn turns the robot counter-clockwise,
                 //   it may be more intuitive to invert the x value.
-                val turningValue = -right_stick_x * turningPower
-                drivetrain.startTurn(turningValue)
-                telemetry.write("Turn power", turningValue.toString())
+                // Do not turn the robot when the right stick is within a deadzone -- it may confuse the motors and twitter.
+                if (right_stick_x < -0.1 || right_stick_x > 0.1) { // TODO improve
+                    val turningValue = -right_stick_x * turningPower
+                    drivetrain.startTurn(turningValue)
+                    telemetry.write("Turn power", turningValue.toString())
+                }
             }
 
             with(gamepad2) {
@@ -103,8 +112,23 @@ class TeleOpMain : OpMode() {
                         openCloseBind(left_bumper, right_bumper, glypher.bucketClamping)
 
                 // Collector toggle between idle & pulling in -> A button
-                InputColumns.collector.onChange { _, new ->
+                // Push out -> B button
+                InputColumns.collectorIn.onChange { _, new ->
                     glypher.collectorPower = new.int() * Config.glyphCollectorPower
+                }
+                InputColumns.collectorOut.onChange { _, new ->
+                    glypher.collectorPower = new.int() * -Config.glyphCollectorPower
+                }
+                // Temporary solution: TODO
+
+                // X button raises knocker arm (at request, Dec 17 at Gann)
+                if (x)
+                    Hardware.knocker.raiseArm()
+
+                // Y button toggles collector hugger
+                InputColumns.collectorHug.onChange { _, new ->
+                    if (new)
+                        glypher.collectorHugging = !glypher.collectorHugging
                 }
 
             }
@@ -115,15 +139,22 @@ class TeleOpMain : OpMode() {
         Hardware.telemetry.flush()
     }
 
-    // A button toggle collector
+    // A button toggle collectorIn
     // Up/down lift
     // right stick up / down: bucket eject
     // right bumper open, left bumper close clamp
 
-    class ToggleInputColumn(val input: () -> Boolean) {
+    /**
+     * A class that retains input state and performs a given callback when the state changes.
+     */
+    class ChangeBasedInputColumn<T>(private val input: () -> T) {
         var previousState = input()
 
-        fun onChange(todo: (Boolean, Boolean) -> Unit): Boolean {
+        /**
+         * Calls the given lambda if the input value has changed. Should be called only once during
+         * each loop.
+         */
+        fun onChange(todo: (T, T) -> Unit): T {
             val newState = input()
 
             if (newState != previousState) {

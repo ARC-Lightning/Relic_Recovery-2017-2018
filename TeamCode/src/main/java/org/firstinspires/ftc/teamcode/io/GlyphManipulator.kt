@@ -1,7 +1,6 @@
 package org.firstinspires.ftc.teamcode.io
 
 import com.qualcomm.robotcore.hardware.DcMotor
-import com.qualcomm.robotcore.hardware.DcMotorSimple
 import com.qualcomm.robotcore.hardware.Servo
 
 /**
@@ -14,13 +13,11 @@ import com.qualcomm.robotcore.hardware.Servo
  */
 class GlyphManipulator(
         override val collectors: Set<DcMotor>,
-        bucketLiftLeft: DcMotor,
-        bucketLiftRight: DcMotor,
+        override val bucketLift: DcMotor,
         override val bucketPour: Servo,
         override val bucketClamp: Servo,
-        override val collectorFolder: Servo) : IGlyphManipulator {
-
-    override val bucketLifts: Set<DcMotor> = setOf(bucketLiftLeft, bucketLiftRight)
+        override val collectorFolder: Servo,
+        override val collectorHugger: Servo) : IGlyphManipulator {
 
     // CONFIGURATIONS
     companion object {
@@ -33,9 +30,12 @@ class GlyphManipulator(
         val UNCLAMPING_POS = 0.5
 
         // Bucket pouring servo position when pouring
-        val POURING_POS = 1.0
+        val POURING_POS = 0.8
         // Bucket pouring servo position when flat
-        val UNPOURING_POS = 0.5
+        val UNPOURING_POS = 0.35
+
+        val HUGGING_POS = 0.8
+        val UNHUGGING_POS = 0.4
     }
 
     // Shadow values for avoiding unnecessary calls to hardware
@@ -43,15 +43,14 @@ class GlyphManipulator(
     private var _liftPower: Double = 0.0        // DO NOT CHANGE INITIAL VALUE - DANGEROUS
     private var _bucketPouring: Boolean = false
     private var _bucketClamping: Boolean = false
+    private var _collectorHugging = false
 
     // Initialization should take place to ensure that shadow values and hardware state matches
     // before applyState is called.
     init {
+        bucketLift.zeroPowerBehavior = DcMotor.ZeroPowerBehavior.BRAKE
+
         applyState()
-
-        // MOTOR-RUINING DANGER! Mirroring & connected lift motors require one to be reversed
-        bucketLiftRight.direction = DcMotorSimple.Direction.REVERSE
-
         Hardware.telemetry.write("GlyphManipulator", "Initialized")
     }
 
@@ -60,9 +59,10 @@ class GlyphManipulator(
      */
     private fun applyState() {
         collectors.forEach { it.power = _collectorPower }
-        bucketLifts.forEach { it.power = _liftPower }
+        bucketLift.power = _liftPower
         bucketPour.position = if (_bucketPouring) POURING_POS else UNPOURING_POS
         bucketClamp.position = if (_bucketClamping) CLAMPING_POS else UNCLAMPING_POS
+        collectorHugger.position = if (_collectorHugging) HUGGING_POS else UNHUGGING_POS
     }
 
     override var collectorPower: Double
@@ -94,6 +94,13 @@ class GlyphManipulator(
         get() = _bucketClamping
         set(value) {
             _bucketClamping = value
+            applyState()
+        }
+
+    override var collectorHugging: Boolean
+        get() = _collectorHugging
+        set(value) {
+            _collectorHugging = value
             applyState()
         }
 

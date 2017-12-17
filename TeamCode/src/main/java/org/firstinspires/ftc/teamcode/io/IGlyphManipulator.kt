@@ -4,7 +4,7 @@ import com.qualcomm.robotcore.hardware.DcMotor
 import com.qualcomm.robotcore.hardware.Servo
 
 /**
- * Describes tasks that the glyph manipulator (collector + platform) is capable of doing.
+ * Describes tasks that the glyph manipulator (collectorIn + platform) is capable of doing.
  *
  * @author Michael Peng
  * For team: 4410 (Lightning)
@@ -15,10 +15,11 @@ interface IGlyphManipulator {
 
     // Hardware output devices
     val collectors: Set<DcMotor>
-    val bucketLifts: Set<DcMotor>
+    val bucketLift: DcMotor
     val bucketPour: Servo
     val bucketClamp: Servo
     val collectorFolder: Servo
+    val collectorHugger: Servo
 
     // Getter/setter manipulations
     /**
@@ -35,7 +36,7 @@ interface IGlyphManipulator {
     var liftPower: Double
 
     /**
-     * Unfolds the collector flywheels. Best performed right after the start of a game.
+     * Unfolds the collectorIn flywheels. Best performed right after the start of a game.
      * Once unfolded, this method has no effect.
      */
     fun unfoldCollector()
@@ -57,4 +58,6 @@ interface IGlyphManipulator {
      */
     // A shadow variable is recommended for implementation.
     var bucketClamping: Boolean
+
+    var collectorHugging: Boolean
 }

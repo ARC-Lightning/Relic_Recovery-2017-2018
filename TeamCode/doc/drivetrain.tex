@@ -53,7 +53,7 @@ The methods designed for TeleOp are optimized for being controlled in a synchron
 
 If the algorithm above were to be used with the result directly fed to the drivetrain manager, the robot would stop itself everytime a new node is reached. To alleviate this ineffiency, the following algorithm converts the steps into a collection of points that describe when the driving direction changes.
 
-\begin{algorithm}
+\begin{algorithm}[H]
 	\caption{Convert nodes $P$ to points $p$}
 	\begin{algorithmic}[1]
 		\Require $P$ to be an array of coordinates
@@ -74,7 +74,7 @@ If the algorithm above were to be used with the result directly fed to the drive
 
 Consequently, the results from the above algorithm are converted to calls to the Drivetrain Manager in the following algorithm.
 
-\begin{algorithm}
+\begin{algorithm}[H]
 	\caption{Carry out navigation of points $p$}
 	\begin{algorithmic}[1]
 		\Require $p$ to be an array of coordinates

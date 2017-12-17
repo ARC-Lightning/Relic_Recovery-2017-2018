@@ -6,6 +6,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.RelicRecoveryVuMark
 import org.firstinspires.ftc.teamcode.AcsNavigator
 import org.firstinspires.ftc.teamcode.io.DynamicConfig
 import org.firstinspires.ftc.teamcode.io.Hardware
+import org.firstinspires.ftc.teamcode.teleop.GamepadListener
 
 /**
  * The main LinearOpMode procedure in which autonomous operation is performed.
@@ -31,6 +32,7 @@ class AutonomousMain : LinearOpMode() {
     lateinit var navigator: AcsNavigator
     lateinit var vuforia: IVuforia
     lateinit var decider: DecisionMaker
+    lateinit var configurator: GamepadListener
 
     var vuMark: RelicRecoveryVuMark? = null
 
@@ -48,7 +50,11 @@ class AutonomousMain : LinearOpMode() {
             Hardware.glypher.bucketClamping = true
         }
 
-        waitForStart()
+        synchronized(this) {
+            while (!isStarted) {
+                configurator.update()
+            }
+        }
 
         // Take tasks from the decider and execute them
         while (!decider.isDone && !isStopRequested) {
@@ -82,6 +88,7 @@ class AutonomousMain : LinearOpMode() {
                 navigator = AcsNavigator(telemetry, drivetrain)
                 vuforia = Vuforia(opMode)
                 decider = DecisionMaker()
+                configurator = GamepadListener(gamepad1, DynamicConfig.Mapping.mappings)
 
                 // No need to hold telemetry data back in a LinearOpMode
                 Hardware.telemetry.autoClear = false
@@ -109,11 +116,13 @@ class AutonomousMain : LinearOpMode() {
             with(Hardware.knocker) {
                 lowerArm()
 
-                // If no concrete conclusion arises from the data, fail this task
-                val colorDetected = detect() ?: return false
+                val colorDetected = detect()
 
-                // Knock off the jewel of color opposite to the team we're on
-                removeJewel(colorDetected != DynamicConfig.alliance)
+                // If no concrete conclusion arises from the data, fail this task
+                if (colorDetected != null) {
+                    // Knock off the jewel of color opposite to the team we're on
+                    removeJewel(colorDetected != DynamicConfig.alliance)
+                }
 
                 raiseArm()
                 return true
@@ -142,10 +151,12 @@ class AutonomousMain : LinearOpMode() {
                 vuMark = vuforia.readVuMark()
                 vuforia.stopTracking()
 
+                Hardware.telemetry.write("Read VuMark", vuMark?.name ?: "Failed")
+
                 // If its representation is known, it's successful
                 return vuMark != RelicRecoveryVuMark.UNKNOWN
             }
-        }
+        }/*
 
         @Task(priority = 15.0 / 85.0, reliability = 0.5)
         fun placeInCryptoBox(opMode: AutonomousMain): Boolean {
@@ -162,6 +173,6 @@ class AutonomousMain : LinearOpMode() {
             Hardware.glypher.bucketPouring = false
 
             return true
-        }
+        }*/
     }
 }

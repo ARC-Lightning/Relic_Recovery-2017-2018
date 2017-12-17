@@ -25,17 +25,17 @@ class AuxJewelKnocker(val telemetry: ITelemetry,
     companion object {
 
         // Servo positions
-        val raisedPosition: Double = 0.0
+        val raisedPosition: Double = 0.17
         val loweredPosition: Double = 0.6
 
         // Color sensor data decision threshold
-        val colorThreshold = 150
+        val colorThreshold = 6
 
         // Direction in which the color sensor is facing (toward front of robot or back?)
-        val isColorSensorFacingFront = true
+        val isColorSensorFacingFront = false
 
         // How far it should go when knocking a jewel off (in inches)
-        val knockDistance = 2.0
+        val knockDistance = 3.0
 
     }
 

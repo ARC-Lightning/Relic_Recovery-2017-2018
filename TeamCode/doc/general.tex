@@ -10,7 +10,7 @@
 \maketitle
 
 \begin{abstract}
-This is my abstract.
+This abstract is to be completed when this article is finished.
 \end{abstract}
 \section{Style and Language}
 
@@ -24,7 +24,7 @@ Kotlin is a programming language that runs on the Java Virtual Machine (JVM) pla
 \begin{description}
 
 \item[Lambdas]
-Whereas Java offers Runnables as an equivalent to a lambda with no parameters or return values\footnote{We ignored Java 8+ because FTC's official Robot Controller repository, at the time of writing, still uses Java 7.}, Kotlin offers full lambda support with parameters and implicit return values. This allows us to implement callback mappings in a readable, writable, and understandable way. For example, the \texttt{GamepadListener} class contains a \texttt{Map} from the \texttt{typealias} \texttt{GamepadProperty} to the \texttt{typealias} \texttt{GamepadRule}, both of which represent lambdas with a given set of input types. Lambdas are also extensively used in iterator transformations such as \texttt{map}, \texttt{filter}, and \texttt{reduce}. Kotlin's support for Lambdas makes implementations of these functions possible without third-party libraries, as opposed to the case in Java 7.
+Whereas Java offers Runnables as an equivalent to a lambda with no parameters or return values\footnote{We ignored Java 8+ because FTC's official Robot Controller repository, at the time of writing, still uses Java 7.}, Kotlin offers full lambda support with parameters and implicit return values. This allows us to implement callback mappings in a readable, writable, and understandable way. For example, the \texttt{GamepadListener} class contains a \texttt{Map} from the \texttt{typealias} \texttt{GamepadProperty} to the \texttt{typealias} \texttt{GamepadRule}, both of which represent lambdas with a given set of input types. Lambdas are also extensively used in functional iterator transformations such as \texttt{map}, \texttt{filter}, and \texttt{reduce}. Kotlin's support for Lambdas and these methods makes implementations of these functions possible without third-party libraries, as opposed using Java 7.
 
 \item[Null Safety]
 Types in Kotlin are non-nullable by default, whereas any non-primitive type in Java can be \texttt{null}. Although this does not bring exciting new features to our code, it encourages us to handle null cases when the type is declared to be nullable, preventing \texttt{NullPointerException}s.
@@ -42,25 +42,40 @@ Kotlin is developed by JetBrains. The platform on which Android Studio is based 
 
 \subsection{Style Guide}
 
-To ensure consistency in readability and formatting, our codebase is fully compliant with \href{https://android.github.io/kotlin-guides/style.html}{Google's Android Kotlin Style Guide}.
+To ensure consistency in readability and formatting, our codebase is fully compliant with \href{https://android.github.io/kotlin-guides/style.html}{Google's Android Kotlin Style Guide}. Strict adherence to a style guide provides us with consistent code style that does not obstruct productivity and improves readability.
 
 \subsubsection{Interfaces}
 
+The codebase is split into well-defined modules that correspond to the individual subsystems present in the robot. For example, The \texttt{IGlyphManipulator} interface allows other parts of the code to access the output devices that control the glyph mechanism; the \texttt{IDrivetrain} interface provides vector-based abstraction of movement and rotation using the drivetrain. For each module there is an interface file (prefixed with \texttt{I}) and an arbitrary amount of classes that implement that interface. This separation of protocol and implementation was intended for independency of specific implementations, enabling it to be swapped for another without much disturbance to the codebase as a whole. With this capability, seamless integration of code across authors can be achieved.
+
 \subsubsection{Responsibilities}
+
+Each module in the codebase has specific responsibilities, such as operating the jewel knocker or moving the robot. This form of organization facilitates the location of bugs in the code and aligns with our principles, which are discussed below.
 
 \subsection{Principles}
 
+It is our belief that compliance with a set of well-regarded programming principles can drastically improve code maintainability and quality in general. It is anticipated that this codebase might be inherited by our team in upcoming years, and consequently the intelligibility and reusability of the code is crucial to future success. Below is an enumeration of the principles with which this codebase attempts to comply.
 \begin{description}
 
 \item[Minimizing Coupling]
+Coupling can be roughly defined as the amount of interconnection between a pair of modules. Minimizing coupling increases the level of independence of each module and limits the sharing of data between them, making data and logic more self-sufficient. By doing so, modules can be maintained individually; logic can be modified without disrupting other modules unless changes to the interface are being made. Furthermore, reducing coupling improves readability by
 
 \item[D.R.Y.]
-
+\textit{D.R.Y.} stands for "Don't Repeat Yourself." Its execution encourages
 \item[Readability]
 
-\item[Syntax Style]
-\href{https://android.github.io/kotlin-guides/style.html}{Style guide}
-
 \end{description}
+
+\section{Technical Description}
+
+\subsection{GameMap}
+
+\subsection{Drivetrain}
+
+\subsection{Autonomous Decision Making}
+
+\subsection{Custom Telemetry}
+
+\subsection{I/O Devices}
 
 \end{document}

@@ -7,7 +7,7 @@ import org.locationtech.jts.geom.GeometryFactory
 import org.locationtech.jts.geom.Polygon
 
 /**
- * A map of game obstacles with a polygonal boundary. See the ACS document, 3.1.2, for more
+ * A map of game obstacles with a polygonal boundary. See the ACS document @ 3.1.2, for more
  * details.
  *
  * Created by: Michael Peng
@@ -39,8 +39,7 @@ private constructor(
          * The positions available in this map. Each position is given a name for reference purposes.
          * These positions may only be valid on this GameMap.
          */
-        private var positions: Map<String, Position>
-) : IGameMap {
+        private var positions: Map<String, Position>) : IGameMap {
 
 
     /**
@@ -80,7 +79,7 @@ private constructor(
                                 // On the balancing stone
                                 "start" to Position(Coordinate((24 * 2).toDouble(), 24.0), 0.0),
                                 // On the balancing stone, ready to read/knock the jewels
-                                "jewel-knock" to Position(Coordinate((24 * 2).toDouble(), 24.0), Angle.toRadians(90.0)),
+                                "jewel-knock" to Position(Coordinate((24 * 2).toDouble(), 24.0), Angle.toRadians(180.0)),
                                 // (Parked) In the safe zone
                                 "safe-zone" to Position(Coordinate(24 * 2.4, 24 * 2.5), Angle.toRadians(270.0)),
                                 // Putting the pre-loaded glyph into the leftmost crypto-box column
@@ -112,7 +111,7 @@ private constructor(
                                 // On the balancing stone
                                 "start" to Position(Coordinate(24.0, 24.0), 0.0),
                                 // On the balancing stone, ready to read/knock the jewels
-                                "jewel-knock" to Position(Coordinate(24.0, 24.0), Angle.toRadians(270.0)),
+                                "jewel-knock" to Position(Coordinate(22.5, 24.0), Angle.toRadians(0.0)),
                                 // (Parked) in the safe zone
                                 "safe-zone" to Position(Coordinate(24 * 0.6, 24 * 2.5), Angle.toRadians(90.0)),
                                 // Putting the pre-loaded glyph into the leftmost crypto-box column
@@ -182,7 +181,7 @@ private constructor(
         /**
          * Gets a GameMap by its name.
          * @param name Name of the querying GameMap
-         * @return The querying GameMap, or null if there is no map by the name.
+         * @return The querying GameMap, or `null` if there is no map by the name.
          */
         fun getMapByName(name: String): IGameMap? = maps[name]
 
