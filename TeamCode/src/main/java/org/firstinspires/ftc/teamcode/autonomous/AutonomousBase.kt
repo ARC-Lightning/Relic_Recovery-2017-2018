@@ -6,23 +6,25 @@ import org.firstinspires.ftc.robotcore.external.navigation.RelicRecoveryVuMark
 import org.firstinspires.ftc.teamcode.AllianceColor
 import org.firstinspires.ftc.teamcode.io.DynamicConfig
 import org.firstinspires.ftc.teamcode.io.Hardware
-import org.firstinspires.ftc.teamcode.teleop.GamepadListener
 
 /**
- * The main LinearOpMode procedure in which autonomous operation is performed.
+ * The base LinearOpMode procedure in which autonomous operation is performed.
  * Four actions that score points for us:
  * - Putting pre-loaded glyph into column
  * - The right column according to the VuMark
  * - Knocking off the right jewel
  * - Parking in the safe zone
  *
+ * To use this base class, extend it while specifying its constructor parameters and put
+ *   the annotation on that class.
+ *
  * @author Michael Peng
  * For team: 4410 (Lightning)
  *
  * FIRST - Gracious Professionalism
  */
-@Autonomous(name = "Autonomous Main", group = "Pragmaticos")
-class AutonomousMain : LinearOpMode() {
+open class AutonomousBase(private val allianceColor: AllianceColor,
+                          private val isStartingLeft: Boolean) : LinearOpMode() {
 
     // CONFIGURATIONS
     companion object {
@@ -39,7 +41,6 @@ class AutonomousMain : LinearOpMode() {
     lateinit var navigator: IAutoNav
     lateinit var vuforia: IVuforia
     lateinit var decider: DecisionMaker
-    lateinit var configurator: GamepadListener
 
     var vuMark: RelicRecoveryVuMark? = null
 
@@ -55,17 +56,8 @@ class AutonomousMain : LinearOpMode() {
         with(Hardware) {
             // The glyph clamp will be preloaded with a glyph. Close the clamp to hold it.
             Hardware.glypher.bucketClamping = true
-
-            with(DynamicConfig) {
-                // Read Gamepad values for starting position.
-                // Press X for blue alliance, otherwise red;
-                //   Press dpad left for left start, otherwise right
-                alliance = if (gamepad1.x) AllianceColor.BLUE else AllianceColor.RED
-                isStartingLeft = gamepad1.dpad_left
-                Hardware.telemetry.data("DynConf Input",
-                        "AllianceColor=$alliance StartOnLeft=$isStartingLeft")
-            }
         }
+
         waitForStart()
 
         if (runTasksArbitrarily) {
@@ -102,11 +94,15 @@ class AutonomousMain : LinearOpMode() {
                 navigator = AutoNav()
                 vuforia = Vuforia(opMode)
                 decider = DecisionMaker()
-                configurator = GamepadListener(gamepad1, DynamicConfig.Mapping.mappings)
 
                 // No need to hold telemetry data back in a LinearOpMode
                 Hardware.telemetry.autoClear = false
                 Hardware.telemetry.autoUpdate = true
+
+                // Assign given parameters to DynamicConfig
+                DynamicConfig.alliance = allianceColor
+                DynamicConfig.isStartingLeft = isStartingLeft
+                // TODO deprecate DynamicConfig?
 
                 Hardware.telemetry.data("Tasks", decider.nextTasks)
             }
@@ -139,7 +135,7 @@ class AutonomousMain : LinearOpMode() {
     object Tasks {
 
         @Task(priority = 30.0 / 85.0, reliability = 0.75)
-        fun knockJewel(opMode: AutonomousMain): Boolean {
+        fun knockJewel(opMode: AutonomousBase): Boolean {
             with(Hardware.knocker) {
                 opMode.navigator.beginJewelKnock()
 
@@ -161,7 +157,7 @@ class AutonomousMain : LinearOpMode() {
         }
 
         @Task(priority = 10.0 / 85.0, reliability = 0.9)
-        fun parkInSafeZone(opMode: AutonomousMain): Boolean {
+        fun parkInSafeZone(opMode: AutonomousBase): Boolean {
             opMode.navigator.goToCryptoBox(RelicRecoveryVuMark.CENTER)
             opMode.sleep(2000)
             opMode.navigator.returnFromCryptoBox(RelicRecoveryVuMark.CENTER)
@@ -169,7 +165,7 @@ class AutonomousMain : LinearOpMode() {
         }
 
         @Task(priority = 30.0 / 85.0, reliability = 0.7)
-        fun readVuMark(opMode: AutonomousMain): Boolean {
+        fun readVuMark(opMode: AutonomousBase): Boolean {
             with(opMode) {
                 vuforia.startTracking()
 
@@ -187,7 +183,7 @@ class AutonomousMain : LinearOpMode() {
         }
 
         @Task(priority = 15.0 / 85.0, reliability = 0.7)
-        fun placeInCryptoBox(opMode: AutonomousMain): Boolean {
+        fun placeInCryptoBox(opMode: AutonomousBase): Boolean {
             if (opMode.vuMark == null) {
                 return false
             }
@@ -201,3 +197,15 @@ class AutonomousMain : LinearOpMode() {
         }
     }
 }
+
+@Autonomous(name = "Auto Red Left", group = "Pragmaticos")
+class RedLeftAuto : AutonomousBase(AllianceColor.RED, true)
+
+@Autonomous(name = "Auto Red Right", group = "Pragmaticos")
+class RedRightAuto : AutonomousBase(AllianceColor.RED, false)
+
+@Autonomous(name = "Auto Blue Left", group = "Pragmaticos")
+class BlueLeftAuto : AutonomousBase(AllianceColor.BLUE, true)
+
+@Autonomous(name = "Auto Blue Right", group = "Pragmaticos")
+class BlueRightAuto : AutonomousBase(AllianceColor.BLUE, false)

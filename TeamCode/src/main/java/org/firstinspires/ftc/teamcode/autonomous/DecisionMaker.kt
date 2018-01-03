@@ -15,7 +15,7 @@ import kotlin.reflect.full.findAnnotation
  *
  * FIRST - Gracious Professionalism
  */
-class DecisionMaker(tasks: KClass<AutonomousMain.Tasks> = AutonomousMain.Tasks::class) {
+class DecisionMaker(tasks: KClass<AutonomousBase.Tasks> = AutonomousBase.Tasks::class) {
 
     // CONFIGURATIONS
     companion object {
@@ -78,12 +78,12 @@ class DecisionMaker(tasks: KClass<AutonomousMain.Tasks> = AutonomousMain.Tasks::
      * @return `null` when name parameter not in options or when task threw an exception,
      *      otherwise whether the task succeeded
      */
-    fun doTask(name: String, opMode: AutonomousMain): Boolean? {
+    fun doTask(name: String, opMode: AutonomousBase): Boolean? {
         return if (nextTasks.contains(name)) {
             try {
 
                 // Reflection requires casting; if name in nextTasks, then it's in options
-                val result = options.getValue(name).call(AutonomousMain.Tasks, opMode) as Boolean
+                val result = options.getValue(name).call(AutonomousBase.Tasks, opMode) as Boolean
 
                 // If the task was successful, then remove it from the set of remaining ones
                 if (result)
