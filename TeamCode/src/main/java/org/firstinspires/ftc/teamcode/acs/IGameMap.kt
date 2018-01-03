@@ -11,6 +11,7 @@ import org.locationtech.jts.geom.Polygon
  *
  * FIRST - Gracious Professionalism
  */
+@Deprecated(message = "ACS has been abandoned for a simpler solution")
 interface IGameMap {
     val boundary: Polygon
 

@@ -17,6 +17,7 @@ import org.locationtech.jts.math.Vector2D
  *
  * FIRST - Gracious Professionalism
  */
+@Deprecated(message = "ACS has been abandoned for a simpler solution")
 class AcsNavigator
 /**
  * Creates a new instance of the ACS Navigator, using the given telemetry manager for logging

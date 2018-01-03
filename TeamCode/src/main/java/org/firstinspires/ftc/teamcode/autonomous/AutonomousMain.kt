@@ -3,7 +3,7 @@ package org.firstinspires.ftc.teamcode.autonomous
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode
 import org.firstinspires.ftc.robotcore.external.navigation.RelicRecoveryVuMark
-import org.firstinspires.ftc.teamcode.AcsNavigator
+import org.firstinspires.ftc.teamcode.AllianceColor
 import org.firstinspires.ftc.teamcode.io.DynamicConfig
 import org.firstinspires.ftc.teamcode.io.Hardware
 import org.firstinspires.ftc.teamcode.teleop.GamepadListener
@@ -27,9 +27,16 @@ class AutonomousMain : LinearOpMode() {
     // CONFIGURATIONS
     companion object {
         val motorPower = 0.9
+        val taskSequence = listOf(
+                "knockJewel",
+                "readVuMark",
+                "placeInCryptoBox",
+                "parkInSafeZone"
+        )
+        val runTasksArbitrarily = false
     }
 
-    lateinit var navigator: AcsNavigator
+    lateinit var navigator: IAutoNav
     lateinit var vuforia: IVuforia
     lateinit var decider: DecisionMaker
     lateinit var configurator: GamepadListener
@@ -48,23 +55,30 @@ class AutonomousMain : LinearOpMode() {
         with(Hardware) {
             // The glyph clamp will be preloaded with a glyph. Close the clamp to hold it.
             Hardware.glypher.bucketClamping = true
-        }
 
-        synchronized(this) {
-            while (!isStarted) {
-                configurator.update()
+            with(DynamicConfig) {
+                // Read Gamepad values for starting position.
+                // Press X for blue alliance, otherwise red;
+                //   Press dpad left for left start, otherwise right
+                alliance = if (gamepad1.x) AllianceColor.BLUE else AllianceColor.RED
+                isStartingLeft = gamepad1.dpad_left
+                Hardware.telemetry.data("DynConf Input",
+                        "AllianceColor=$alliance StartOnLeft=$isStartingLeft")
             }
         }
+        waitForStart()
 
-        // Take tasks from the decider and execute them
-        while (!decider.isDone && !isStopRequested) {
-            val nextTask = decider.nextTask()!!
-
-            Hardware.telemetry.write("Performing next task", nextTask)
-            val result = decider.doTask(nextTask, this)
-
-            Hardware.telemetry.data("Task $nextTask successful?",
-                    result ?: "there was a problem, so no")
+        if (runTasksArbitrarily) {
+            Hardware.telemetry.write("Task Decision Model", "Arbitrary")
+            while (!decider.isDone && !isStopRequested) {
+                runTask(decider.nextTask()!!)
+            }
+        } else {
+            Hardware.telemetry.write("Task Decision Model", "Predefined")
+            val seqIt = taskSequence.iterator()
+            while (seqIt.hasNext() && !isStopRequested) {
+                runTask(seqIt.next())
+            }
         }
     }
 
@@ -85,7 +99,7 @@ class AutonomousMain : LinearOpMode() {
             Hardware.init(this, motorPower)
 
             with(Hardware) {
-                navigator = AcsNavigator(telemetry, drivetrain)
+                navigator = AutoNav()
                 vuforia = Vuforia(opMode)
                 decider = DecisionMaker()
                 configurator = GamepadListener(gamepad1, DynamicConfig.Mapping.mappings)
@@ -105,6 +119,20 @@ class AutonomousMain : LinearOpMode() {
         return true
     }
 
+    /**
+     * Executes the task with the given name verbosely.
+     * @returns The result returned by the task
+     */
+    private fun runTask(taskName: String): Boolean? {
+        Hardware.telemetry.write("Performing next task", taskName)
+        val result = decider.doTask(taskName, this)
+
+        Hardware.telemetry.data("Task $taskName successful?",
+                result ?: "there was a problem, so no")
+
+        return result
+    }
+
     // Tasks
     // TODO("testing pending") Optimize reliability coefficients
 
@@ -112,8 +140,9 @@ class AutonomousMain : LinearOpMode() {
 
         @Task(priority = 30.0 / 85.0, reliability = 0.75)
         fun knockJewel(opMode: AutonomousMain): Boolean {
-            opMode.navigator.goToPosition("jewel-knock")
             with(Hardware.knocker) {
+                opMode.navigator.beginJewelKnock()
+
                 lowerArm()
 
                 val colorDetected = detect()
@@ -125,28 +154,27 @@ class AutonomousMain : LinearOpMode() {
                 }
 
                 raiseArm()
-                return true
+
+                opMode.navigator.endJewelKnock()
+                return colorDetected != null
             }
         }
 
         @Task(priority = 10.0 / 85.0, reliability = 0.9)
         fun parkInSafeZone(opMode: AutonomousMain): Boolean {
-            opMode.navigator.goToPosition("safe-zone")
-            opMode.sleep(1000)
+            opMode.navigator.goToCryptoBox(RelicRecoveryVuMark.CENTER)
+            opMode.sleep(2000)
+            opMode.navigator.returnFromCryptoBox(RelicRecoveryVuMark.CENTER)
             return true
         }
 
         @Task(priority = 30.0 / 85.0, reliability = 0.7)
         fun readVuMark(opMode: AutonomousMain): Boolean {
             with(opMode) {
-                // The VuMark is placed close enough to the jewel knocking position that it should be
-                // able to be recognized at that position
-                navigator.goToPosition("jewel-knock")
-
                 vuforia.startTracking()
 
                 // Allow camera to focus
-                opMode.sleep(2000)
+                opMode.sleep(4000)
 
                 vuMark = vuforia.readVuMark()
                 vuforia.stopTracking()
@@ -156,23 +184,20 @@ class AutonomousMain : LinearOpMode() {
                 // If its representation is known, it's successful
                 return vuMark != RelicRecoveryVuMark.UNKNOWN
             }
-        }/*
+        }
 
-        @Task(priority = 15.0 / 85.0, reliability = 0.5)
+        @Task(priority = 15.0 / 85.0, reliability = 0.7)
         fun placeInCryptoBox(opMode: AutonomousMain): Boolean {
-            opMode.navigator.goToPosition(when (opMode.vuMark) {
-                RelicRecoveryVuMark.LEFT -> "load-column1"
-                RelicRecoveryVuMark.CENTER -> "load-column2"
-                RelicRecoveryVuMark.RIGHT -> "load-column3"
-            // TODO("testing pending") Loading into which column is most reliable?
-                RelicRecoveryVuMark.UNKNOWN, null -> "load-column1"
-            })
+            if (opMode.vuMark == null) {
+                return false
+            }
+            opMode.navigator.goToCryptoBox(opMode.vuMark!!)
 
             Hardware.glypher.bucketPouring = true
             Hardware.glypher.bucketClamping = false
             Hardware.glypher.bucketPouring = false
 
             return true
-        }*/
+        }
     }
 }

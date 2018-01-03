@@ -51,6 +51,6 @@ class Telemetry(private val telem: org.firstinspires.ftc.robotcore.external.Tele
     //     fun maybeUpdate() = if (autoUpdate) flush()
 
     override fun flush() {
-        telem.update()
+        this.telem.update()
     }
 }

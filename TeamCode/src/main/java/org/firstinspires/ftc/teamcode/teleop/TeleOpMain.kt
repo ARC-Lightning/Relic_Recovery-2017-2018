@@ -147,8 +147,8 @@ class TeleOpMain : OpMode() {
     /**
      * A class that retains input state and performs a given callback when the state changes.
      */
-    class ChangeBasedInputColumn<T>(private val input: () -> T) {
-        var previousState = input()
+    class ChangeBasedInputColumn<out T>(private val input: () -> T) {
+        private var previousState = input()
 
         /**
          * Calls the given lambda if the input value has changed. Should be called only once during

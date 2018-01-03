@@ -11,7 +11,7 @@ import org.locationtech.jts.geom.Coordinate
  *
  * FIRST - Gracious Professionalism
  */
-
+@Deprecated(message = "ACS has been abandoned for a simpler solution")
 data class Position(val location: Coordinate, val orientation: Double)
 
 // Oh, look how neat this is compared to its Java predecessor!

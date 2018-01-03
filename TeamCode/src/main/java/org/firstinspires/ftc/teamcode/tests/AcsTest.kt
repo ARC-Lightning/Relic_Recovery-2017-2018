@@ -21,6 +21,8 @@ class AcsTest : LinearOpMode() {
         telemetry.addData("Y axis", "X axis: Diagonal: Turning")
         telemetry.update()
 
+        Hardware.telemetry.autoUpdate = true
+
         with(Hardware.drivetrain) {
             move(Vector2D(0.0, 1.0))
             move(Vector2D(1.0, 0.0))

@@ -12,8 +12,7 @@ import org.locationtech.jts.math.Vector2D
  *
  * FIRST - Gracious Professionalism
  *
- * <p>
- * <h1>A WORD ON DIRECTIONS</h1>
+ * # A WORD ON DIRECTIONS
  *
  * In this implementation of the Drivetrain interface, directions are represented similar to
  * how a vector is represented mathematically. To understand this relationship, assume that the
@@ -34,13 +33,13 @@ import org.locationtech.jts.math.Vector2D
  *  - ← = (-1, 0)
  *  - ↖ = (-1, 1)
  *
- * <h2>Motivation</h2>
+ * ## Motivation
  *
  * This system provides the flexibility that allows path-finding algorithms to manipulate
  * directions. For example, the forward and rightServo vectors can be summed to produce the up-rightServo
  * diagonal vector.
  *
- * <h2>Synthetic Movements</h2>
+ * ## Synthetic Movements
  *
  * If you decide to send a vector like `(2, 1)` to `move()`, the robot will most likely move
  * in a path that coincides with the vector segment (straight). By altering motor power, the robot
@@ -49,7 +48,7 @@ import org.locationtech.jts.math.Vector2D
  * _These vectors are discouraged because there is no guarantee for the order in which the
  * robot moves. This could potentially lead to conflict with obstacles._
  *
- * <h2>Technically...</h2>
+ * ## Technically...
  *
  * The vector is represented by a `Vector2D` object. This class is included with JTS Topology
  * Suite. An enum-like class named `VectorDirection` is included with

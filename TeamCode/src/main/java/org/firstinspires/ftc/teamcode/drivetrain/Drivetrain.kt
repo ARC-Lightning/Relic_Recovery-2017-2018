@@ -3,7 +3,7 @@ package org.firstinspires.ftc.teamcode.drivetrain
 import com.qualcomm.robotcore.hardware.DcMotor
 import com.qualcomm.robotcore.hardware.DcMotorSimple
 import com.qualcomm.robotcore.util.Range
-import org.firstinspires.ftc.teamcode.io.Hardware
+import com.qualcomm.robotcore.util.RobotLog
 import org.locationtech.jts.algorithm.Angle
 import org.locationtech.jts.math.Vector2D
 
@@ -41,9 +41,9 @@ class Drivetrain(
 
     // CONFIGURATION
     companion object {
-        private val TICKS_PER_ROTATION = 1440.0
-        private val INCHES_PER_ROTATION = 4.5
-        private val TICKS_PER_CIRCULAR_SPIN = TICKS_PER_ROTATION * 4
+        private val TICKS_PER_REVOLUTION = 280.0
+        private val INCHES_PER_REVOLUTION = 2.5
+        private val TICKS_PER_CIRCULAR_SPIN = TICKS_PER_REVOLUTION * 4
     }
     // END CONFIGURATION
 
@@ -115,18 +115,18 @@ class Drivetrain(
         )
     }
 
-    /**
+    /*
      * Turns the given vector into one that is in VectorDirection.
      * Creates a clone.
      * @param vec The vector to be normalized
      * @return The normalized vector
-     */
+     *
     private fun normalize(vec: Vector2D): Vector2D {
         val x = vec.x
         val y = vec.y
         // Ternary in use to avoid Division By Zero
         return Vector2D(if (x == 0.0) 0.0 else Math.abs(x) / x, if (y == 0.0) 0.0 else Math.abs(y) / y)
-    }
+    }*/
 
     private fun checkPower(power: Double) {
         if (power == 0.0) {
@@ -144,8 +144,8 @@ class Drivetrain(
         getMotorPowerFromVector(direction).entries
                 // For each pair -> power entry
                 .forEach { mapping ->
-                    // TUDO(remove) bad debugging method below
-                    Hardware.telemetry.data(mapping.key.displayName, mapping.value * multiplier)
+                    // TODO(remove) bad debugging method below
+                    RobotLog.ii(mapping.key.displayName, (mapping.value * multiplier).toString())
                     forEachOf(*mapping.key.motors) {
                         it.power = Range.clip(mapping.value * multiplier, -1.0, 1.0)
                     }
@@ -156,8 +156,10 @@ class Drivetrain(
         //      i in      IPR in    TPR tick
         // t = ─────── / ─────── * ──────────
         //        1        1 rot      1 rot
-        val relativeTicks = relativeInch / INCHES_PER_ROTATION * TICKS_PER_ROTATION
+        val relativeTicks = relativeInch / INCHES_PER_REVOLUTION * TICKS_PER_REVOLUTION
         motor.targetPosition = motor.currentPosition + Math.round(relativeTicks).toInt()
+        // TODO(debugging) not debugging
+        RobotLog.ii(motor.connectionInfo, "C=${motor.currentPosition} T=$relativeTicks")
     }
 
     private fun forEachOf(vararg motors: IDrivetrain.MotorPtr, todo: (DcMotor) -> Unit) {
@@ -236,8 +238,7 @@ class Drivetrain(
      * @param power     Power, [0.0, 1.0], to set the necessary motors to
      */
     override fun startMove(direction: Vector2D, power: Double) {
-        if (this.motors[IDrivetrain.MotorPtr.FRONT_LEFT]!!.mode != DcMotor.RunMode.RUN_WITHOUT_ENCODER) // TODO remove
-            this.setMotorMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER)
+        this.setMotorMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER)
         this.setMotorPowers(direction, power)
     }
 
@@ -269,6 +270,11 @@ class Drivetrain(
         if (radians == 0.0)
             return
 
+        // RUN_USING_ENCODER first
+        for (motor in this.motors.values) {
+            motor.mode = DcMotor.RunMode.RUN_USING_ENCODER
+        }
+
         // Turn the radians into relative ticks for one side of the drivetrain, then the other side
         //   is the negation of that value.
         var tickMagnitude = Math.round(Math.abs(Angle.normalize(radians)) / (2 * Math.PI) * TICKS_PER_CIRCULAR_SPIN)
@@ -278,6 +284,9 @@ class Drivetrain(
         if (radians < 0.0)
             tickMagnitude *= -1
 
+        // TODO remove
+        RobotLog.ii("Turn tick magnitude", tickMagnitude.toString())
+
         // Wait for other motor operations to complete
         while (isBusy);
 
@@ -285,7 +294,7 @@ class Drivetrain(
                 IDrivetrain.MotorPtr.FRONT_RIGHT,
                 IDrivetrain.MotorPtr.REAR_RIGHT
         ) {
-            it.targetPosition = (it.currentPosition + tickMagnitude).toInt()
+            it.targetPosition = it.currentPosition + tickMagnitude.toInt()
             it.mode = DcMotor.RunMode.RUN_TO_POSITION
             it.power = power
         }
