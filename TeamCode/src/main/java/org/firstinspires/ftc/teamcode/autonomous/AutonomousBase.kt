@@ -6,6 +6,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.RelicRecoveryVuMark
 import org.firstinspires.ftc.teamcode.AllianceColor
 import org.firstinspires.ftc.teamcode.io.DynamicConfig
 import org.firstinspires.ftc.teamcode.io.Hardware
+import org.firstinspires.ftc.teamcode.io.IGlyphManipulator
 
 /**
  * The base LinearOpMode procedure in which autonomous operation is performed.
@@ -30,8 +31,8 @@ open class AutonomousBase(private val allianceColor: AllianceColor,
     companion object {
         val motorPower = 0.9
         val taskSequence = listOf(
-                "knockJewel",
-                "readVuMark",
+                // "knockJewel",
+                //TODO add "readVuMark",
                 "placeInCryptoBox",
                 "parkInSafeZone"
         )
@@ -67,9 +68,25 @@ open class AutonomousBase(private val allianceColor: AllianceColor,
             }
         } else {
             Hardware.telemetry.write("Task Decision Model", "Predefined")
+            var useFailsafe = false
             val seqIt = taskSequence.iterator()
+
             while (seqIt.hasNext() && !isStopRequested) {
-                runTask(seqIt.next())
+                if (runTask(seqIt.next()) != true) {
+                    Hardware.telemetry.error("Predefined task failure, fail-safe")
+                    useFailsafe = true
+                    break
+                }
+            }
+            if (useFailsafe) {
+                while (!decider.isDone && !isStopRequested) {
+                    val task = decider.nextTask()
+                    if (task != null) {
+                        runTask(task)
+                    } else {
+                        Hardware.telemetry.warning("Next task returned null while decider not done")
+                    }
+                }
             }
         }
     }
@@ -136,7 +153,7 @@ open class AutonomousBase(private val allianceColor: AllianceColor,
 
         @Task(priority = 30.0 / 85.0, reliability = 0.75)
         fun knockJewel(opMode: AutonomousBase): Boolean {
-            with(Hardware.knocker) {
+            /*with(Hardware.knocker) {
                 opMode.navigator.beginJewelKnock()
 
                 lowerArm()
@@ -153,7 +170,8 @@ open class AutonomousBase(private val allianceColor: AllianceColor,
 
                 opMode.navigator.endJewelKnock()
                 return colorDetected != null
-            }
+            }*/
+            return true
         }
 
         @Task(priority = 10.0 / 85.0, reliability = 0.9)
@@ -164,13 +182,13 @@ open class AutonomousBase(private val allianceColor: AllianceColor,
             return true
         }
 
-        @Task(priority = 30.0 / 85.0, reliability = 0.7)
+        /*@Task(priority = 30.0 / 85.0, reliability = 0.7)
         fun readVuMark(opMode: AutonomousBase): Boolean {
             with(opMode) {
                 vuforia.startTracking()
 
                 // Allow camera to focus
-                opMode.sleep(4000)
+                opMode.sleep(3000)
 
                 vuMark = vuforia.readVuMark()
                 vuforia.stopTracking()
@@ -180,18 +198,15 @@ open class AutonomousBase(private val allianceColor: AllianceColor,
                 // If its representation is known, it's successful
                 return vuMark != RelicRecoveryVuMark.UNKNOWN
             }
-        }
+        }*/
 
         @Task(priority = 15.0 / 85.0, reliability = 0.7)
         fun placeInCryptoBox(opMode: AutonomousBase): Boolean {
-            if (opMode.vuMark == null) {
-                return false
-            }
-            opMode.navigator.goToCryptoBox(opMode.vuMark!!)
+            opMode.navigator.goToCryptoBox(opMode.vuMark ?: RelicRecoveryVuMark.CENTER)
 
-            Hardware.glypher.bucketPouring = true
+            Hardware.glypher.bucketPourPos = IGlyphManipulator.POURING_POS
             Hardware.glypher.bucketClamping = false
-            Hardware.glypher.bucketPouring = false
+            Hardware.glypher.bucketPourPos = IGlyphManipulator.UNPOURING_POS
 
             return true
         }

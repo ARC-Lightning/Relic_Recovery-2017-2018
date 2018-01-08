@@ -37,6 +37,13 @@ class Drivetrain(
         // Preciseness of movement is crucial in AcsNavigator.
         // Don't let the motors drift.
         motors.values.forEach { it.zeroPowerBehavior = DcMotor.ZeroPowerBehavior.BRAKE }
+
+        // Reset the encoders.
+        motors.values.forEach {
+            it.mode = DcMotor.RunMode.STOP_AND_RESET_ENCODER
+        }
+
+        setMotorMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER)
     }
 
     // CONFIGURATION
@@ -44,8 +51,14 @@ class Drivetrain(
         private val TICKS_PER_REVOLUTION = 280.0
         private val INCHES_PER_REVOLUTION = 2.5
         private val TICKS_PER_CIRCULAR_SPIN = TICKS_PER_REVOLUTION * 4
+        private val COUNT_USING_TIME = true
+        private val MOVE_MS_PER_INCH = 40
+        private val TURN_MS_PER_CIRCLE = 1000
     }
     // END CONFIGURATION
+
+    // Variables
+    private var isUsingEncoders: Boolean = false
 
     /**
      * Defines a pair of diagonal motors. Useful for Mecanum manipulation.
@@ -87,6 +100,15 @@ class Drivetrain(
      * @return A mapping from a diagonal pair of motors to their desired power multiplier
      */
     private fun getMotorPowerFromVector(vec: Vector2D): Map<MotorDiagonalPair, Double> {
+        // Lightning against Division By Zero!
+        if (vec.length() == 0.0) {
+            return mapOf(
+                    MotorDiagonalPair.RIGHT to 0.0,
+                    MotorDiagonalPair.LEFT to 0.0
+            )
+        }
+
+        // TODO Remove scaling of power for TeleOp if gamepad stick limit is circular
         val clone = vec.rotate(Angle.toRadians(315.0))
 
         val scale = maxOf(Math.abs(clone.x), Math.abs(clone.y))
@@ -144,10 +166,9 @@ class Drivetrain(
         getMotorPowerFromVector(direction).entries
                 // For each pair -> power entry
                 .forEach { mapping ->
-                    // TODO(remove) bad debugging method below
-                    RobotLog.ii(mapping.key.displayName, (mapping.value * multiplier).toString())
                     forEachOf(*mapping.key.motors) {
                         it.power = Range.clip(mapping.value * multiplier, -1.0, 1.0)
+                        RobotLog.ii(mapping.key.displayName, (mapping.value * multiplier).toString())
                     }
                 }
     }
@@ -182,14 +203,13 @@ class Drivetrain(
 
     /**
      * Moves the robot according to the specified vector in the specified power.
-     * If any motor in the drivetrain is busy when this is called, it will block until no motors are busy.
+     * Blocks until the movement is finished.
      * Ideal for Autonomous (LinearOpMode)
      *
      * @param vector The vector to move the robot in. See comment above for how it works.
      * @param power  The power, [0.0, 1.0], to set the motor(s) to.
      */
     override fun move(vector: Vector2D, power: Double) {
-        // TODO test synthetic movement
         checkPower(power)
         while (this.isBusy);
 
@@ -197,18 +217,35 @@ class Drivetrain(
         if (vector.x == 0.0 && vector.y == 0.0)
             return
 
-        setMotorMode(DcMotor.RunMode.RUN_USING_ENCODER)
+        RobotLog.i("Moving to $vector")
 
-        // Determine the positional targets for each motor pair
-        directionToRelativeTargets(vector).forEach { (pair, position) ->
-            // Set the relative target position of all motors in the pair
-            pair.motors.forEach {
-                setRelativeTargetPosition(getMotor(it), position)
+        if (COUNT_USING_TIME) {
+            setMotorMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER)
+
+            val waitTime = MOVE_MS_PER_INCH * vector.length() / power
+
+            setMotorPowers(vector, power)
+            Thread.sleep(waitTime.toLong())
+
+            stop()
+        } else {
+            setMotorMode(DcMotor.RunMode.RUN_USING_ENCODER)
+
+            // Determine the positional targets for each motor pair
+            directionToRelativeTargets(vector).forEach { (pair, position) ->
+                // Set the relative target position of all motors in the pair
+                pair.motors.forEach {
+                    setRelativeTargetPosition(getMotor(it), position)
+                }
             }
-        }
 
-        setMotorMode(DcMotor.RunMode.RUN_TO_POSITION)
-        setMotorPowers(vector, power)
+            setMotorMode(DcMotor.RunMode.RUN_TO_POSITION)
+            setMotorPowers(vector, power)
+
+            // TODO evaluate
+            while (this.isBusy);
+            stop()
+        }
     }
 
     /**
@@ -216,7 +253,10 @@ class Drivetrain(
      *
      * @return True if any drivetrain motor is busy, otherwise false
      */
-    override val isBusy: Boolean get() = this.motors.values.any { it.isBusy }
+    override val isBusy: Boolean
+        get() = this.motors.values.any {
+            it.isBusy
+        }
 
     /**
      * Starts moving the robot at the default speed according to the specified direction.
@@ -238,7 +278,8 @@ class Drivetrain(
      * @param power     Power, [0.0, 1.0], to set the necessary motors to
      */
     override fun startMove(direction: Vector2D, power: Double) {
-        this.setMotorMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER)
+        //this.setUsingEncoders(false)
+        this.setMotorMode(com.qualcomm.robotcore.hardware.DcMotor.RunMode.RUN_WITHOUT_ENCODER)
         this.setMotorPowers(direction, power)
     }
 
@@ -270,42 +311,59 @@ class Drivetrain(
         if (radians == 0.0)
             return
 
-        // RUN_USING_ENCODER first
-        for (motor in this.motors.values) {
-            motor.mode = DcMotor.RunMode.RUN_USING_ENCODER
-        }
+        if (COUNT_USING_TIME) {
+            this.setMotorMode(com.qualcomm.robotcore.hardware.DcMotor.RunMode.RUN_WITHOUT_ENCODER)
+            val waitTime = TURN_MS_PER_CIRCLE * (Math.abs(radians) / 2 * Math.PI) / power
 
-        // Turn the radians into relative ticks for one side of the drivetrain, then the other side
-        //   is the negation of that value.
-        var tickMagnitude = Math.round(Math.abs(Angle.normalize(radians)) / (2 * Math.PI) * TICKS_PER_CIRCULAR_SPIN)
+            val (leftPower, rightPower) = if (radians < 0.0) {
+                power to -power
+            } else {
+                -power to power
+            }
 
-        // tickMagnitude is always applied to the right side because the unit circle is
-        //   counter-clockwise. If the input value is negative, then tickMagnitude shall be negated.
-        if (radians < 0.0)
-            tickMagnitude *= -1
+            forEachOf(IDrivetrain.MotorPtr.FRONT_RIGHT, IDrivetrain.MotorPtr.REAR_RIGHT) {
+                it.power = rightPower
+            }
+            forEachOf(IDrivetrain.MotorPtr.FRONT_LEFT, IDrivetrain.MotorPtr.REAR_LEFT) {
+                it.power = leftPower
+            }
 
-        // TODO remove
-        RobotLog.ii("Turn tick magnitude", tickMagnitude.toString())
+            Thread.sleep(waitTime.toLong())
 
-        // Wait for other motor operations to complete
-        while (isBusy);
+            stop()
+        } else {
+            // RUN_USING_ENCODER first
+            this.setMotorMode(com.qualcomm.robotcore.hardware.DcMotor.RunMode.RUN_USING_ENCODER)
 
-        forEachOf(
-                IDrivetrain.MotorPtr.FRONT_RIGHT,
-                IDrivetrain.MotorPtr.REAR_RIGHT
-        ) {
-            it.targetPosition = it.currentPosition + tickMagnitude.toInt()
-            it.mode = DcMotor.RunMode.RUN_TO_POSITION
-            it.power = power
-        }
+            // Turn the radians into relative ticks for one side of the drivetrain, then the other side
+            //   is the negation of that value.
+            var tickMagnitude = Math.round(Math.abs(Angle.normalize(radians)) / (2 * Math.PI) * TICKS_PER_CIRCULAR_SPIN)
 
-        forEachOf(
-                IDrivetrain.MotorPtr.FRONT_LEFT,
-                IDrivetrain.MotorPtr.REAR_LEFT
-        ) {
-            it.targetPosition = (it.currentPosition - tickMagnitude).toInt()
-            it.mode = DcMotor.RunMode.RUN_TO_POSITION
-            it.power = power
+            // tickMagnitude is always applied to the right side because the unit circle is
+            //   counter-clockwise. If the input value is positive, then tickMagnitude shall be negated.
+            if (radians < 0.0)
+                tickMagnitude *= -1
+
+            // Wait for other motor operations to complete
+            while (this.isBusy);
+
+            forEachOf(
+                    IDrivetrain.MotorPtr.FRONT_RIGHT,
+                    IDrivetrain.MotorPtr.REAR_RIGHT
+            ) {
+                it.targetPosition = it.currentPosition + tickMagnitude.toInt()
+                it.mode = DcMotor.RunMode.RUN_TO_POSITION
+                it.power = power
+            }
+
+            forEachOf(
+                    IDrivetrain.MotorPtr.FRONT_LEFT,
+                    IDrivetrain.MotorPtr.REAR_LEFT
+            ) {
+                it.targetPosition = (it.currentPosition - tickMagnitude).toInt()
+                it.mode = DcMotor.RunMode.RUN_TO_POSITION
+                it.power = power
+            }
         }
     }
 
@@ -320,12 +378,17 @@ class Drivetrain(
     override fun startTurn(power: Double) {
         val validPower = Range.clip(power, -1.0, 1.0)
 
+        this.setMotorMode(com.qualcomm.robotcore.hardware.DcMotor.RunMode.RUN_WITHOUT_ENCODER)
+
+        if (power == 0.0) {
+            return
+        }
+
         forEachOf(
                 IDrivetrain.MotorPtr.FRONT_RIGHT,
                 IDrivetrain.MotorPtr.REAR_RIGHT
         ) {
 
-            it.mode = DcMotor.RunMode.RUN_WITHOUT_ENCODER
             it.power = validPower
 
         }
@@ -334,7 +397,6 @@ class Drivetrain(
                 IDrivetrain.MotorPtr.FRONT_LEFT,
                 IDrivetrain.MotorPtr.REAR_LEFT
         ) {
-            it.mode = DcMotor.RunMode.RUN_WITHOUT_ENCODER
             it.power = -validPower
         }
     }

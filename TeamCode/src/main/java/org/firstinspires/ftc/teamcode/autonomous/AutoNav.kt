@@ -55,6 +55,8 @@ class AutoNav : IAutoNav {
          *   is lined up with the white line between the jewels.
          */
         val JEWEL_ACCESS_OFFSET = 0.3
+
+        val DRIVE_POWER = 0.7
     }
 
     private val isStartingOnCorner: Boolean
@@ -81,11 +83,11 @@ class AutoNav : IAutoNav {
 
     // Jewel arm on left side (negative x)
     override fun beginJewelKnock() {
-        Hardware.drivetrain.move(Vector2D(-JEWEL_ACCESS_OFFSET, 0.0))
+        Hardware.drivetrain.move(Vector2D(-JEWEL_ACCESS_OFFSET, 0.0), DRIVE_POWER)
     }
 
     override fun endJewelKnock() {
-        Hardware.drivetrain.move(Vector2D(JEWEL_ACCESS_OFFSET, 0.0))
+        Hardware.drivetrain.move(Vector2D(JEWEL_ACCESS_OFFSET, 0.0), DRIVE_POWER)
     }
 
     private fun instructionsToCryptoBox(): Pair<Vector2D, Double> {
@@ -115,18 +117,18 @@ class AutoNav : IAutoNav {
     override fun goToCryptoBox(vuMark: RelicRecoveryVuMark) {
         val (movement, turnDeg) = instructionsToCryptoBox()
         with(Hardware.drivetrain) {
-            move(movement)
-            turn(Angle.toRadians(turnDeg))
-            move(instructionsToColumn(vuMark))
+            move(movement, DRIVE_POWER)
+            turn(Angle.toRadians(turnDeg), DRIVE_POWER)
+            move(instructionsToColumn(vuMark), DRIVE_POWER)
         }
     }
 
     override fun returnFromCryptoBox(vuMark: RelicRecoveryVuMark) {
         val (movement, turnDeg) = instructionsToCryptoBox()
         with(Hardware.drivetrain) {
-            move(instructionsToColumn(vuMark).negate())
-            turn(Angle.toRadians(-turnDeg))
-            move(movement.negate())
+            move(instructionsToColumn(vuMark).negate(), DRIVE_POWER)
+            turn(Angle.toRadians(-turnDeg), DRIVE_POWER)
+            move(movement.negate(), DRIVE_POWER)
         }
     }
 }

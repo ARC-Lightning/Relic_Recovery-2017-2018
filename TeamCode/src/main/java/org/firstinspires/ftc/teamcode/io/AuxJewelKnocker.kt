@@ -25,8 +25,8 @@ class AuxJewelKnocker(val telemetry: ITelemetry,
     companion object {
 
         // Servo positions
-        val raisedPosition: Double = 0.17
-        val loweredPosition: Double = 0.6
+        val raisedPosition: Double = 0.0
+        val loweredPosition: Double = 0.35
 
         // Color sensor data decision threshold
         val colorThreshold = 6

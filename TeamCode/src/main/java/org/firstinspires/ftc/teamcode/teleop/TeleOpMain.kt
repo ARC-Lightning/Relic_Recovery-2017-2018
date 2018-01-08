@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.teleop
 
 import com.qualcomm.robotcore.eventloop.opmode.OpMode
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp
+import com.qualcomm.robotcore.util.Range
 import org.firstinspires.ftc.teamcode.io.DynamicConfig
 import org.firstinspires.ftc.teamcode.io.Hardware
 import org.locationtech.jts.math.Vector2D
@@ -26,11 +27,12 @@ class TeleOpMain : OpMode() {
 
     // Configuration values
     object Config {
-        val motorPower = 0.8
+        val motorPower = 0.9
         val turnSpeed = 0.95
-        val glyphCollectorPower = 0.8
+        val glyphCollectorPower = 0.9
         val bucketLiftPower = 0.3
         val stickAxisToBinaryThreshold = 0.3
+        val bucketPourSensitivity = 0.015
     }
 
     object InputColumns {
@@ -55,7 +57,7 @@ class TeleOpMain : OpMode() {
         InputColumns.collectorHug = ChangeBasedInputColumn { gamepad2.y }
 
         // Lock the jewel arm
-        Hardware.knocker.raiseArm()
+        //Hardware.knocker.raiseArm()
     }
 
     override fun init_loop() {
@@ -80,13 +82,13 @@ class TeleOpMain : OpMode() {
                 drivetrain.startMove(moveVec, moveVec.length() / Math.sqrt(2.0))
                 telemetry.write("Move vector", moveVec.toString())
 
-                // Drivetrain turning
+                //jkuDrivetrain turning
                 val turningPower = Config.motorPower * Config.turnSpeed
                 // The x axis of a stick on the gamepad is positive when it is to the right.
                 //   Since positive power in startTurn turns the robot counter-clockwise,
                 //   it may be more intuitive to invert the x value.
                 // Do not turn the robot when the right stick is within a deadzone -- it may confuse the motors and twitter.
-                if (right_stick_x < -0.1 || right_stick_x > 0.1) { // TODO improve
+                if (right_stick_x < -0.1 || right_stick_x > 0.1) {
                     val turningValue = -right_stick_x * turningPower
                     drivetrain.startTurn(turningValue)
                     telemetry.write("Turn power", turningValue.toString())
@@ -104,8 +106,9 @@ class TeleOpMain : OpMode() {
                         dpad_down.int() * Config.bucketLiftPower
 
                 // Bucket pour -> Right stick y, forward = vertical, backward = laid down
-                glypher.bucketPouring =
-                        stickAxisToBinary(-right_stick_y.toDouble(), glypher.bucketPouring)
+                glypher.bucketPourPos = Range.clip(
+                        glypher.bucketPourPos - right_stick_y.toDouble() *
+                                Config.bucketPourSensitivity, 0.0, 1.0)
 
                 // Bucket clamping -> right bumper open, left bumper close
                 glypher.bucketClamping =
@@ -121,9 +124,9 @@ class TeleOpMain : OpMode() {
                 }
                 // Temporary solution: TODO
 
-                // X button raises knocker arm (at request, Dec 17 at Gann)
+                /* X button raises knocker arm (at request, Dec 17 at Gann)
                 if (x)
-                    Hardware.knocker.raiseArm()
+                    Hardware.knocker.raiseArm()*/
 
                 // Y button toggles collector hugger
                 InputColumns.collectorHug.onChange { _, new ->

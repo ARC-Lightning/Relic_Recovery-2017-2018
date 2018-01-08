@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.io
 
 import com.qualcomm.robotcore.hardware.DcMotor
+import com.qualcomm.robotcore.hardware.DcMotorSimple
 import com.qualcomm.robotcore.hardware.Servo
 
 /**
@@ -29,10 +30,10 @@ class GlyphManipulator(
         // Bucket clamp servo position when released
         val UNCLAMPING_POS = 0.5
 
-        // Bucket pouring servo position when pouring
-        val POURING_POS = 0.8
+        /* Bucket pouring servo position when pouring
+        val POURING_POS = 0.63
         // Bucket pouring servo position when flat
-        val UNPOURING_POS = 0.35
+        val UNPOURING_POS = 1.0*/
 
         val HUGGING_POS = 0.8
         val UNHUGGING_POS = 0.4
@@ -41,7 +42,7 @@ class GlyphManipulator(
     // Shadow values for avoiding unnecessary calls to hardware
     private var _collectorPower: Double = 0.0   // DO NOT CHANGE INITIAL VALUE - DANGEROUS
     private var _liftPower: Double = 0.0        // DO NOT CHANGE INITIAL VALUE - DANGEROUS
-    private var _bucketPouring: Boolean = false
+    private var _bucketPourPos: Double = 0.0    // DO NOT CHANGE INITIAL VALUE - DANGEROUS
     private var _bucketClamping: Boolean = false
     private var _collectorHugging = false
 
@@ -49,6 +50,7 @@ class GlyphManipulator(
     // before applyState is called.
     init {
         bucketLift.zeroPowerBehavior = DcMotor.ZeroPowerBehavior.BRAKE
+        bucketLift.direction = DcMotorSimple.Direction.REVERSE
 
         applyState()
         Hardware.telemetry.write("GlyphManipulator", "Initialized")
@@ -60,7 +62,7 @@ class GlyphManipulator(
     private fun applyState() {
         collectors.forEach { it.power = _collectorPower }
         bucketLift.power = _liftPower
-        bucketPour.position = if (_bucketPouring) POURING_POS else UNPOURING_POS
+        bucketPour.position = _bucketPourPos
         bucketClamp.position = if (_bucketClamping) CLAMPING_POS else UNCLAMPING_POS
         collectorHugger.position = if (_collectorHugging) HUGGING_POS else UNHUGGING_POS
     }
@@ -83,10 +85,10 @@ class GlyphManipulator(
         collectorFolder.position = UNFOLDED_POS
     }
 
-    override var bucketPouring: Boolean
-        get() = _bucketPouring
+    override var bucketPourPos: Double
+        get() = _bucketPourPos
         set(value) {
-            _bucketPouring = value
+            _bucketPourPos = value
             applyState()
         }
 

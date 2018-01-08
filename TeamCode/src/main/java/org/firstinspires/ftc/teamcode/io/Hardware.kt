@@ -25,6 +25,7 @@ object Hardware {
     lateinit var drivetrain: IDrivetrain
     lateinit var telemetry: ITelemetry
     lateinit var glypher: GlyphManipulator
+    // TODO fix usages
     lateinit var knocker: IJewelKnocker
 
     // LATEINIT - OpModes MUST initialize ASAP using this function, otherwise expect NPEs!
@@ -61,12 +62,12 @@ object Hardware {
                 // Reverse direction of FlywheelRight motor due to symmetry
                 dcMotor.get("FlywheelRight").direction = DcMotorSimple.Direction.REVERSE
 
-                // JewelKnocker
+                /* JewelKnocker
                 knocker = AuxJewelKnocker(
                         telemetry,
                         drivetrain,
                         color = colorSensor.get("JewelSensor"),
-                        arm = servo.get("JewelArm"))
+                        arm = servo.get("JewelArm"))*/
             }
 
         } catch (exc: Exception) {

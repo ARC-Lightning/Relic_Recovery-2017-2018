@@ -13,6 +13,11 @@ import com.qualcomm.robotcore.hardware.Servo
  */
 interface IGlyphManipulator {
 
+    companion object {
+        val POURING_POS = 0.36
+        val UNPOURING_POS = 0.0
+    }
+
     // Hardware output devices
     val collectors: Set<DcMotor>
     val bucketLift: DcMotor
@@ -42,13 +47,14 @@ interface IGlyphManipulator {
     fun unfoldCollector()
 
     /**
-     * Binary controls for the bucket-tilting servo.
+     * Analog controls for the bucket-tilting servo.
      *
-     * `true` = vertical, `false` = flat
+     * POURING_POS represents the position when the platform is lifted.
+     * UNPOURING_POS represents the position when the platform is flat.
      *
      */
     // A shadow variable is recommended for implementation.
-    var bucketPouring: Boolean
+    var bucketPourPos: Double
 
     /**
      * Binary controls for the clamp of the bucket.

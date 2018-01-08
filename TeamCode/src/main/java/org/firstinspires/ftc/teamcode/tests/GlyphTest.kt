@@ -85,12 +85,7 @@ class GlyphTest : OpMode() {
                     bucketLiftRight.power = it
                 }
             }
-            if (right_bumper) {
-                bucketPour.position = GlyphManipulator.POURING_POS
-            }
-            if (left_bumper) {
-                bucketPour.position = GlyphManipulator.UNPOURING_POS
-            }
+            // TODO add bucket pouring pos back
             if (y) {
                 bucketClamp.position = GlyphManipulator.CLAMPING_POS
             }
