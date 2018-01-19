@@ -79,20 +79,13 @@ class TeleOpMain : OpMode() {
                 val moveVec = Vector2D(
                         left_stick_x.toDouble(),
                         -left_stick_y.toDouble())
-                drivetrain.startMove(moveVec, moveVec.length() / Math.sqrt(2.0))
                 telemetry.write("Move vector", moveVec.toString())
 
-                //jkuDrivetrain turning
-                val turningPower = Config.motorPower * Config.turnSpeed
-                // The x axis of a stick on the gamepad is positive when it is to the right.
-                //   Since positive power in startTurn turns the robot counter-clockwise,
-                //   it may be more intuitive to invert the x value.
-                // Do not turn the robot when the right stick is within a deadzone -- it may confuse the motors and twitter.
-                if (right_stick_x < -0.1 || right_stick_x > 0.1) {
-                    val turningValue = -right_stick_x * turningPower
-                    drivetrain.startTurn(turningValue)
-                    telemetry.write("Turn power", turningValue.toString())
-                }
+                val turnPower = right_stick_x * Config.motorPower * Config.turnSpeed
+                telemetry.write("Turn power", turnPower.toString())
+
+                drivetrain.actuate(moveVec, moveVec.length() / Math.sqrt(2.0),
+                        true, turnPower)
             }
 
             with(gamepad2) {

@@ -70,21 +70,6 @@ interface IDrivetrain {
     val defaultPower: Double
 
     /**
-     * A class containing vectors representing all of 8 directions in which the robot is capable of
-     * moving without motor power control.
-     */
-    object VectorDirection {
-        val FORWARD = Vector2D(0.0, 1.0)
-        val FORWARD_RIGHT = Vector2D(1.0, 1.0)
-        val RIGHT = Vector2D(1.0, 0.0)
-        val BACKWARD_RIGHT = Vector2D(1.0, -1.0)
-        val BACKWARD = Vector2D(0.0, -1.0)
-        val BACKWARD_LEFT = Vector2D(-1.0, -1.0)
-        val LEFT = Vector2D(-1.0, 0.0)
-        val FORWARD_LEFT = Vector2D(-1.0, 1.0)
-    }
-
-    /**
      * This enum contains values that point to each motor in the drivetrain.
      * This is useful for directly sending commands to the individual motors.
      */
@@ -166,6 +151,20 @@ interface IDrivetrain {
      * @param power The power multiplier, [-1, 1]
      */
     fun startTurn(power: Double)
+
+    /**
+     * Moves and turns the robot simultaneously in the direction of the given movement vector.
+     * Due to limits on motor power (-1 <= x <= 1), they may be scaled down to fit that range,
+     *   thus the resulting powers are not guaranteed to be consistent across different `power` or
+     *   `turnPower` inputs for the same `movement` and `turnClockwise` inputs. For example, a large
+     *   `turnPower` value may greatly reduce movement speed.
+     *
+     * @param movement Direction of movement relative to the current orientation of the robot
+     * @param power Speed of movement, (0, 1]
+     * @param turnClockwise True if turning clockwise, otherwise counter-clockwise
+     * @param turnPower Speed of turning, (0, 1]
+     */
+    fun actuate(movement: Vector2D, power: Double, turnClockwise: Boolean, turnPower: Double)
 
     /**
      * Gets the DcMotor object at the specified position relative to the robot.

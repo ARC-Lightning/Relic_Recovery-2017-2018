@@ -26,10 +26,10 @@ class Drivetrain(
         private val motors: Map<IDrivetrain.MotorPtr, DcMotor>) : IDrivetrain {
 
     init {
-        // Reverse the direction of motors on the right.
+        // Reverse the direction of motors on the left.
         forEachOf(
-                IDrivetrain.MotorPtr.FRONT_RIGHT,
-                IDrivetrain.MotorPtr.REAR_RIGHT
+                IDrivetrain.MotorPtr.FRONT_LEFT,
+                IDrivetrain.MotorPtr.REAR_LEFT
         ) {
             it.direction = DcMotorSimple.Direction.REVERSE
         }
@@ -39,10 +39,7 @@ class Drivetrain(
         motors.values.forEach { it.zeroPowerBehavior = DcMotor.ZeroPowerBehavior.BRAKE }
 
         // Reset the encoders.
-        motors.values.forEach {
-            it.mode = DcMotor.RunMode.STOP_AND_RESET_ENCODER
-        }
-
+        setMotorMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER)
         setMotorMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER)
     }
 
@@ -56,9 +53,6 @@ class Drivetrain(
         private val TURN_MS_PER_CIRCLE = 1000
     }
     // END CONFIGURATION
-
-    // Variables
-    private var isUsingEncoders: Boolean = false
 
     /**
      * Defines a pair of diagonal motors. Useful for Mecanum manipulation.
@@ -91,33 +85,51 @@ class Drivetrain(
         Conclusion: a 45-degree clockwise rotation will convert an input vector to a vector where
           the x value is the relative target position for the RIGHT pair and the y value is the <...>
           for the LEFT pair.
+
+        Power calculation:
+         - Rotate vector 45 deg
+         - Scale vector to have absolute value of at least one component be 1 ((-1, -0.4), (0.3, 1))
+         - Multiply vector by given power value
+         - Assign components to diagonal pairs
+
+        Target position calculation:
+         - Rotate vector 45 deg
+         - Convert both components from inches to revolutions, then to ticks
+         - Assign converted ticks to diagonal pairs
+
+        Duration calculation:
+         - Rotate vector 45 deg
+         - Convert both components from inches to milliseconds, then divide both by power value
+         - Sleep for converted milliseconds (then stop motors)
      */
 
     /**
-     * Calculates a mapping from a diagonal pair of motors to their desired power multiplier from
+     * Calculates a mapping from the diagonal pairs of motors to their power from
      * any arbitrary vector.
-     * @param vec The vector indicating the direction to go
-     * @return A mapping from a diagonal pair of motors to their desired power multiplier
+     * @param vec The vector indicating the direction to move in
+     * @param power Power multiplier, (0, 1]
+     * @return A mapping from a diagonal pair of motors to their desired power
      */
-    private fun getMotorPowerFromVector(vec: Vector2D): Map<MotorDiagonalPair, Double> {
-        // Lightning against Division By Zero!
-        if (vec.length() == 0.0) {
-            return mapOf(
-                    MotorDiagonalPair.RIGHT to 0.0,
-                    MotorDiagonalPair.LEFT to 0.0
-            )
-        }
-
-        // TODO Remove scaling of power for TeleOp if gamepad stick limit is circular
-        val clone = vec.rotate(Angle.toRadians(315.0))
-
-        val scale = maxOf(Math.abs(clone.x), Math.abs(clone.y))
-        val rightPower = clone.x / scale
-        val leftPower = clone.y / scale
-
+    private fun getMovementPowers(vec: Vector2D, power: Double): Map<MotorDiagonalPair, Double> {
+        val directionPowers = normalize(vec.rotate(Angle.toRadians(315.0))).multiply(power)
         return mapOf(
-                MotorDiagonalPair.RIGHT to rightPower,
-                MotorDiagonalPair.LEFT to leftPower
+                MotorDiagonalPair.RIGHT to directionPowers.x,
+                MotorDiagonalPair.LEFT to directionPowers.y
+        )
+    }
+
+    // Power has range [-1, 1]
+    // Positive power means clockwise turning
+    private fun getTurnPowers(power: Double): Map<IDrivetrain.MotorPtr, Double> {
+        if (power == 0.0) {
+            // No turning, 0 power
+            return this.motors.keys.map { it to power }.toMap()
+        }
+        return mapOf(
+                IDrivetrain.MotorPtr.REAR_LEFT to power,
+                IDrivetrain.MotorPtr.FRONT_LEFT to power,
+                IDrivetrain.MotorPtr.REAR_RIGHT to -power,
+                IDrivetrain.MotorPtr.FRONT_RIGHT to -power
         )
     }
 
@@ -137,18 +149,18 @@ class Drivetrain(
         )
     }
 
-    /*
-     * Turns the given vector into one that is in VectorDirection.
+    /**
+     * Scales the given vector proportionally into one whose max abs(component) is 1.
      * Creates a clone.
      * @param vec The vector to be normalized
      * @return The normalized vector
-     *
+     */
     private fun normalize(vec: Vector2D): Vector2D {
-        val x = vec.x
-        val y = vec.y
-        // Ternary in use to avoid Division By Zero
-        return Vector2D(if (x == 0.0) 0.0 else Math.abs(x) / x, if (y == 0.0) 0.0 else Math.abs(y) / y)
-    }*/
+        if (vec.x == 0.0 && vec.y == 0.0) {
+            return Vector2D(vec)
+        }
+        return vec.divide(Math.max(Math.abs(vec.x), Math.abs(vec.y)))
+    }
 
     private fun checkPower(power: Double) {
         if (power == 0.0) {
@@ -163,12 +175,12 @@ class Drivetrain(
     private fun setMotorPowers(direction: Vector2D, multiplier: Double) {
         // Grab the pair -> power map, then set the power of each motor in each pair to its mapped
         // value.
-        getMotorPowerFromVector(direction).entries
+        getMovementPowers(direction, multiplier).entries
                 // For each pair -> power entry
                 .forEach { mapping ->
                     forEachOf(*mapping.key.motors) {
-                        it.power = Range.clip(mapping.value * multiplier, -1.0, 1.0)
-                        RobotLog.ii(mapping.key.displayName, (mapping.value * multiplier).toString())
+                        it.power = mapping.value
+                        RobotLog.ii(mapping.key.displayName, mapping.value.toString())
                     }
                 }
     }
@@ -179,8 +191,7 @@ class Drivetrain(
         //        1        1 rot      1 rot
         val relativeTicks = relativeInch / INCHES_PER_REVOLUTION * TICKS_PER_REVOLUTION
         motor.targetPosition = motor.currentPosition + Math.round(relativeTicks).toInt()
-        // TODO(debugging) not debugging
-        RobotLog.ii(motor.connectionInfo, "C=${motor.currentPosition} T=$relativeTicks")
+        RobotLog.dd(motor.connectionInfo, "POS_SET C=${motor.currentPosition} T=$relativeTicks")
     }
 
     private fun forEachOf(vararg motors: IDrivetrain.MotorPtr, todo: (DcMotor) -> Unit) {
@@ -191,6 +202,10 @@ class Drivetrain(
         this.motors.values
                 .forEach { it.mode = mode }
     }
+
+    private fun dissolvePairMap(map: Map<MotorDiagonalPair, Double>):
+            Map<IDrivetrain.MotorPtr, Double> =
+            map.entries.map { (pair, power) -> pair.motors.map { it to power } }.flatten().toMap()
 
     /**
      * Moves the robot according to the specified vector in default power.
@@ -265,9 +280,9 @@ class Drivetrain(
      *
      * @param direction A vector from and only from {@see VectorDirection}.
      */
-    override fun startMove(direction: Vector2D) {
+    override fun startMove(direction: Vector2D) =
         this.startMove(direction, defaultPower)
-    }
+
 
     /**
      * Starts moving the robot at the given speed according to the specified direction.
@@ -279,7 +294,7 @@ class Drivetrain(
      */
     override fun startMove(direction: Vector2D, power: Double) {
         //this.setUsingEncoders(false)
-        this.setMotorMode(com.qualcomm.robotcore.hardware.DcMotor.RunMode.RUN_WITHOUT_ENCODER)
+        this.setMotorMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER)
         this.setMotorPowers(direction, power)
     }
 
@@ -312,7 +327,7 @@ class Drivetrain(
             return
 
         if (COUNT_USING_TIME) {
-            this.setMotorMode(com.qualcomm.robotcore.hardware.DcMotor.RunMode.RUN_WITHOUT_ENCODER)
+            this.setMotorMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER)
             val waitTime = TURN_MS_PER_CIRCLE * (Math.abs(radians) / 2 * Math.PI) / power
 
             val (leftPower, rightPower) = if (radians < 0.0) {
@@ -333,7 +348,7 @@ class Drivetrain(
             stop()
         } else {
             // RUN_USING_ENCODER first
-            this.setMotorMode(com.qualcomm.robotcore.hardware.DcMotor.RunMode.RUN_USING_ENCODER)
+            this.setMotorMode(DcMotor.RunMode.RUN_USING_ENCODER)
 
             // Turn the radians into relative ticks for one side of the drivetrain, then the other side
             //   is the negation of that value.
@@ -400,6 +415,35 @@ class Drivetrain(
             it.power = -validPower
         }
     }
+
+    override fun actuate(movement: Vector2D, power: Double, turnClockwise: Boolean,
+                         turnPower: Double) {
+        if (power == 0.0 && turnPower == 0.0) {
+            stop()
+            return
+        }
+
+        // Step 1: Get the movement powers
+        val powers = dissolvePairMap(getMovementPowers(movement, power)).toMutableMap()
+
+        // Step 2: Adjust by the turn powers
+        val turnPowers = getTurnPowers(
+                if (turnClockwise) turnPower else -turnPower)
+        powers.entries.forEach { (ptr, pwr) -> powers[ptr] = pwr + turnPowers[ptr]!! }
+
+        // Step 3: Scale to [-1, 1] if not in limits
+        val scale = powers.values.map(Math::abs).max() ?: 0.0
+        if (scale > 1.0) {
+            powers.entries.forEach { (ptr, pwr) -> powers[ptr] = pwr / scale }
+        }
+
+        // Step 4: Assign powers to motors
+        setMotorMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER)
+        for ((ptr, pwr) in powers) {
+            this.getMotor(ptr).power = pwr
+        }
+    }
+
     /**
      * Gets the DcMotor object at the specified position relative to the robot.
      *
