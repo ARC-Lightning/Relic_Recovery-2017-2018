@@ -19,7 +19,9 @@ class ColorTest : OpMode() {
     lateinit var sensor: ColorSensor
 
     override fun init() {
-        sensor = hardwareMap.colorSensor["JewelSensor"]
+        sensor = hardwareMap.get(ColorSensor::class.java, "JewelSensor")
+        // Set the LED in the beginning
+        sensor.enableLed(true)
     }
 
     override fun loop() {

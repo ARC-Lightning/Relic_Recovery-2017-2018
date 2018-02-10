@@ -17,12 +17,11 @@ import org.locationtech.jts.math.Vector2D
  */
 class AutoNav : IAutoNav {
 
-    // Tweakable Parameters
     companion object {
         /**
          * Width between the MIDDLE of the cryptobox columns in inches. 7.63 according to game manual.
          */
-        val CRYPTOBOX_WIDTH = 7.63
+        const val CRYPTOBOX_WIDTH = 7.63
 
         /**
          * Vector from the starting point to the optimal position to place a glyph in the middle column
@@ -54,9 +53,9 @@ class AutoNav : IAutoNav {
          *   will ONLY move VERTICALLY for this distance in inches. In other words, the starting point
          *   is lined up with the white line between the jewels.
          */
-        val JEWEL_ACCESS_OFFSET = 0.3
+        const val JEWEL_ACCESS_OFFSET = 0.3
 
-        val DRIVE_POWER = 0.7
+        const val DRIVE_POWER = 0.7
     }
 
     private val isStartingOnCorner: Boolean

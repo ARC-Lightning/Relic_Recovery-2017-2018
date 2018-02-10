@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.io
 
 import com.qualcomm.robotcore.eventloop.opmode.OpMode
 import com.qualcomm.robotcore.hardware.DcMotorSimple
+import com.qualcomm.robotcore.hardware.Servo
 import org.firstinspires.ftc.teamcode.drivetrain.Drivetrain
 import org.firstinspires.ftc.teamcode.drivetrain.IDrivetrain
 import org.firstinspires.ftc.teamcode.telemetry.ITelemetry
@@ -47,27 +48,30 @@ object Hardware {
                         IDrivetrain.MotorPtr.REAR_RIGHT to dcMotor.get("RearRight")
                 ))
 
+                // Reverse direction of FlywheelRight motor & RectifierRight due to symmetry
+                // Reverse BEFORE initializing GlyphManipulator
+                dcMotor.get("FlywheelRight").direction = DcMotorSimple.Direction.REVERSE
+                servo.get("RectifierRight").direction = Servo.Direction.REVERSE
+                servo.get("OffsideBucketPour").direction = Servo.Direction.REVERSE
+
                 // GlyphManipulator instance
                 glypher = GlyphManipulator(
                         collectors = setOf(
                                 dcMotor.get("FlywheelLeft"),
                                 dcMotor.get("FlywheelRight")
                         ),
-                        bucketLift = dcMotor.get("BucketLift"),
                         bucketPour = servo.get("BucketPour"),
-                        bucketClamp = servo.get("BucketClamp"),
-                        collectorFolder = servo.get("CollectorFold"),
-                        collectorHugger = servo.get("CollectorHug"))
+                        offsideBucketPour = servo.get("OffsideBucketPour"),
+                        glyphRectifiers = setOf(
+                                servo.get("RectifierLeft"),
+                                servo.get("RectifierRight")
+                        ))
 
-                // Reverse direction of FlywheelRight motor due to symmetry
-                dcMotor.get("FlywheelRight").direction = DcMotorSimple.Direction.REVERSE
-
-                /* JewelKnocker
                 knocker = AuxJewelKnocker(
                         telemetry,
                         drivetrain,
                         color = colorSensor.get("JewelSensor"),
-                        arm = servo.get("JewelArm"))*/
+                        arm = servo.get("JewelArm"))
             }
 
         } catch (exc: Exception) {

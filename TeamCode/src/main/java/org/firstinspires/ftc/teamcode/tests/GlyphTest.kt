@@ -5,7 +5,6 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp
 import com.qualcomm.robotcore.hardware.DcMotor
 import com.qualcomm.robotcore.hardware.DcMotorSimple
 import com.qualcomm.robotcore.hardware.Servo
-import org.firstinspires.ftc.teamcode.io.GlyphManipulator
 
 /**
  * Provides straightforward bindings from hardware to gamepad, enabling the testing of the glyph
@@ -36,13 +35,9 @@ class GlyphTest : OpMode() {
             "THE" to "GLYPH TEST",
             "Ⓑ" to "Right flywheel",
             "Ⓧ" to "Left flywheel",
-            "D-pad ▲" to "Raise bucket",
-            "D-pad ▼" to "Lower bucket",
-            "Right bumper" to "Pour bucket",
-            "Left bumper" to "Unpour bucket",
-            "Ⓨ" to "Clamp glyph",
-            "Ⓐ" to "Un-clamp glyph",
-            "START" to "Unfold flywheels"
+            "D-pad ▲" to "Pour bucket",
+            "D-pad ▼" to "Unpour bucket",
+            "Left trigger" to "Left rectifier"
     )
 
     override fun init() {
@@ -86,15 +81,6 @@ class GlyphTest : OpMode() {
                 }
             }
             // TODO add bucket pouring pos back
-            if (y) {
-                bucketClamp.position = GlyphManipulator.CLAMPING_POS
-            }
-            if (a) {
-                bucketClamp.position = GlyphManipulator.UNCLAMPING_POS
-            }
-            if (start) {
-                collectorFold.position = GlyphManipulator.UNFOLDED_POS
-            }
             // Perhaps could be more sophisticated and pleasing to the eye
         }
     }

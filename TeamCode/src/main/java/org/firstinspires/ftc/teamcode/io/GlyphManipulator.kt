@@ -1,8 +1,10 @@
 package org.firstinspires.ftc.teamcode.io
 
 import com.qualcomm.robotcore.hardware.DcMotor
-import com.qualcomm.robotcore.hardware.DcMotorSimple
 import com.qualcomm.robotcore.hardware.Servo
+import com.qualcomm.robotcore.util.Range
+import org.firstinspires.ftc.teamcode.io.IGlyphManipulator.Companion.POUR_MAXIMUM
+import org.firstinspires.ftc.teamcode.io.IGlyphManipulator.Companion.POUR_MINIMUM
 
 /**
  * A generic implementation of `IGlyphManipulator`.
@@ -14,43 +16,31 @@ import com.qualcomm.robotcore.hardware.Servo
  */
 class GlyphManipulator(
         override val collectors: Set<DcMotor>,
-        override val bucketLift: DcMotor,
         override val bucketPour: Servo,
-        override val bucketClamp: Servo,
-        override val collectorFolder: Servo,
-        override val collectorHugger: Servo) : IGlyphManipulator {
+        override val offsideBucketPour: Servo,
+        override val glyphRectifiers: Set<Servo>) : IGlyphManipulator {
 
     // CONFIGURATIONS
     companion object {
-        // Collector folder servo position when unfolded
-        val UNFOLDED_POS = 1.0
 
-        // Bucket clamp servo position when clamping
-        val CLAMPING_POS = 0.7
-        // Bucket clamp servo position when released
-        val UNCLAMPING_POS = 0.5
-
-        /* Bucket pouring servo position when pouring
-        val POURING_POS = 0.63
-        // Bucket pouring servo position when flat
-        val UNPOURING_POS = 1.0*/
-
-        val HUGGING_POS = 0.8
-        val UNHUGGING_POS = 0.4
+        // Rectifier servo positions
+        val RECT_MAXIMUM = 1.0
+        val RECT_MINIMUM = 0.5
     }
 
     // Shadow values for avoiding unnecessary calls to hardware
+    // Values to apply during initialization
     private var _collectorPower: Double = 0.0   // DO NOT CHANGE INITIAL VALUE - DANGEROUS
-    private var _liftPower: Double = 0.0        // DO NOT CHANGE INITIAL VALUE - DANGEROUS
     private var _bucketPourPos: Double = 0.0    // DO NOT CHANGE INITIAL VALUE - DANGEROUS
-    private var _bucketClamping: Boolean = false
-    private var _collectorHugging = false
+    private var _rectifierPos: Double = RECT_MAXIMUM
 
-    // Initialization should take place to ensure that shadow values and hardware state matches
+    // Initialization should take place to ensure that shadow values and hardware state match
     // before applyState is called.
     init {
-        bucketLift.zeroPowerBehavior = DcMotor.ZeroPowerBehavior.BRAKE
-        bucketLift.direction = DcMotorSimple.Direction.REVERSE
+        // Apply scaleRange
+        bucketPour.scaleRange(POUR_MINIMUM, POUR_MAXIMUM)
+        offsideBucketPour.scaleRange(POUR_MINIMUM, POUR_MAXIMUM)
+        glyphRectifiers.forEach { it.scaleRange(RECT_MINIMUM, RECT_MAXIMUM) }
 
         applyState()
         Hardware.telemetry.write("GlyphManipulator", "Initialized")
@@ -61,10 +51,9 @@ class GlyphManipulator(
      */
     private fun applyState() {
         collectors.forEach { it.power = _collectorPower }
-        bucketLift.power = _liftPower
         bucketPour.position = _bucketPourPos
-        bucketClamp.position = if (_bucketClamping) CLAMPING_POS else UNCLAMPING_POS
-        collectorHugger.position = if (_collectorHugging) HUGGING_POS else UNHUGGING_POS
+        offsideBucketPour.position = _bucketPourPos
+        glyphRectifiers.forEach { it.position = _rectifierPos }
     }
 
     override var collectorPower: Double
@@ -74,35 +63,17 @@ class GlyphManipulator(
             applyState()
         }
 
-    override var liftPower: Double
-        get() = _liftPower
-        set(value) {
-            _liftPower = value
-            applyState()
-        }
-
-    override fun unfoldCollector() {
-        collectorFolder.position = UNFOLDED_POS
-    }
-
     override var bucketPourPos: Double
         get() = _bucketPourPos
         set(value) {
-            _bucketPourPos = value
+            _bucketPourPos = Range.clip(value, 0.0, 1.0)
             applyState()
         }
 
-    override var bucketClamping: Boolean
-        get() = _bucketClamping
+    override var rectifierPos: Double
+        get() = _rectifierPos
         set(value) {
-            _bucketClamping = value
-            applyState()
-        }
-
-    override var collectorHugging: Boolean
-        get() = _collectorHugging
-        set(value) {
-            _collectorHugging = value
+            _rectifierPos = Range.clip(value, 0.0, 1.0)
             applyState()
         }
 

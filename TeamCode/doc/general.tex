@@ -10,7 +10,7 @@
 \maketitle
 
 \begin{abstract}
-This abstract is to be completed when this article is finished.
+The Lightning Codebase for 2017-2018 FTC Relic Recovery contains many unique features that are new to the team and uphold rigorous principles. With Kotlin, the development and maintainability of this codebase is vastly improved compared to Java. By splitting code into coherent modules, separation of responsibility and abstraction are achieved while enhancing readability. With a vector-based implementation of Mecanum wheel control, autonomous navigation is simplified. Inspired by the Markov Decision Process (MDP), decisions during autonomous are designed to be made automatically by the robot, according to a few given parameters. Most of all, this codebase strives to be maintainable and extensible for future competitions by enforcing documentation.
 \end{abstract}
 \section{Style and Language}
 
@@ -58,7 +58,7 @@ It is our belief that compliance with a set of well-regarded programming princip
 \begin{description}
 
 \item[Minimizing Coupling]
-Coupling can be roughly defined as the amount of interconnection between a pair of modules. Minimizing coupling increases the level of independence of each module and limits the sharing of data between them, making data and logic more self-sufficient. By doing so, modules can be maintained individually; logic can be modified without disrupting other modules unless changes to the interface are being made. Furthermore, reducing coupling improves readability by minimizing the amount of inter-modular references, thereby making code more focused and straightforward.
+Coupling can be roughly defined as the amount of interconnection between modules. Minimizing coupling increases the level of independence of each module and limits the sharing of data between them, making data and logic more self-sufficient. By doing so, modules can be maintained individually; logic can be modified without disrupting other modules unless changes are made to the interface. Furthermore, reducing coupling improves readability by minimizing the amount of inter-modular references, thereby making code more focused and straightforward.
 
 \item[D.R.Y.]
 \textit{D.R.Y.} stands for "Don't Repeat Yourself." Its adherence encourages the developer to reduce redundancy throughout the system through techniques such as creating utility functions (and thereby reducing average complexity per function), creating universal parameters to store configurable data, and eliminating extraneous or redundant computations. This technique provides considerable benefits to the maintainer, the reader, and the writer. Parameters that require fine-tuning only need to be altered in one location in the code; readers and writers can better understand the purpose and the implementation of each function, increasing abstraction and expanding the capacity of logical complexity.
@@ -76,7 +76,7 @@ There is no practical reason to artificially complicate code. Not only is this a
 \section{Technical Description}
 
 \subsection{Drivetrain}
-With Mecanum wheels, the robot is able to move in at least 8 directions from a given point without turning. With careful adjustments to individual motor powers, the robot can move in any possible direction expressible in a pair of two-dimensional Cartesian coordinates; however, the accuracy of this method is uncertain, and thus there is an option to disable this feature for autonomous navigation. The drivetrain subsystem should be optimized and designed for their operation. It should be designed to work with both TeleOp and Autonomous logic as effortlessly as possible; it should also provide plenty of flexibility for testing and experimentation.
+With Mecanum wheels, the robot is able to move in at least 8 directions from a given point without turning. With careful adjustments to individual motor powers, the robot can move in any possible direction expressible in two-dimensional Cartesian coordinates; however, the accuracy of this method is uncertain, and thus there is an option to disable this feature for autonomous navigation. The drivetrain subsystem should be optimized and designed for their operation. It should be designed to work with both TeleOp and Autonomous logic as effortlessly as possible; it should also provide plenty of flexibility for testing and experimentation.
 
 \subsubsection{Use of Vectors}
 This interface presents movements as vectors on a 2D plane, in which the positive $y$ direction represents forward and the positive $x$ direction represents right. Note that the plane is \textbf{not} projected relative to the playing field, but rather to the robot, i.e. the direction that the robot is facing is the positive $y$ direction. A collection of examples is presented below.
@@ -129,10 +129,20 @@ Task descriptors include a priority factor and a reliability factor for the task
 In addition to automated decision-making, the code also supports a predefined sequence, declared in the \texttt{LinearOpMode} file.
 
 \subsubsection{Navigation}
-The overall demand for navigation in this year's automonous tasks is low, thus its implementation is relatively simple. Two adjustable vector parameters represent the location of the jewels and cryptobox columns relative to the starting point, and a column width parameter defines the distance between the loading positions for adjacent cryptobox columns.
+The overall demand for navigation in this year's autonomous tasks is low, so its implementation is relatively simple. Two adjustable vector parameters represent the location of the jewels and cryptobox columns relative to the starting point, and a column width parameter defines the distance between the loading positions for adjacent cryptobox columns. \texttt{AutoNav} provides functions that move the robot between positions defined by the vectors and the starting point. When the Autonomous period begins, the main routine requests an unfinished task from \texttt{DecisionMaker} to perform, during which the task routines use these \texttt{AutoNav} functions to navigate as necessary.
 
-\subsection{Custom Telemetry}
+%\subsection{I/O Subsystems}
+%Each physical subsystem on the robot corresponds to a dedicated module in the codebase, which contains references to I/O devices (\texttt{DcMotor}, \texttt{Servo}, etc.), initialization procedures, configurable parameters, and public functions that provide abstraction in manipulating the subsystem's devices. These functions enhance readability in other modules. These I/O subsystems assume full responsibility of the operation of their declared hardware devices, which eases maintenance. The following subsections describe each I/O subsystem in detail.
 
-\subsection{I/O Devices}
+%\subsubsection{Glyph manipulator}
+%This subsystem is responsible for the following hardware devices:
+%\begin{description}
+%	\item[The glyph-obtaining flywheels]
+%	\item[Rods that put the glyph in place]
+%	\item[Glyph propellers that allow the middle column to be finished]
+%\end{description}
 
+%\subsubsection{Jewel knocker}
+
+% tests, 
 \end{document}

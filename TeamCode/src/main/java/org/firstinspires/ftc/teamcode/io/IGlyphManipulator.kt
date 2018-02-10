@@ -14,17 +14,17 @@ import com.qualcomm.robotcore.hardware.Servo
 interface IGlyphManipulator {
 
     companion object {
-        val POURING_POS = 0.36
-        val UNPOURING_POS = 0.0
+        // Maximum/minimum servo position for BucketPours, designed to protect the bot
+        // bucketPour & offsideBucketPour will have a scaleRange that corresponds to these values
+        val POUR_MAXIMUM = 1.0
+        val POUR_MINIMUM = 0.0
     }
 
     // Hardware output devices
     val collectors: Set<DcMotor>
-    val bucketLift: DcMotor
     val bucketPour: Servo
-    val bucketClamp: Servo
-    val collectorFolder: Servo
-    val collectorHugger: Servo
+    val offsideBucketPour: Servo
+    val glyphRectifiers: Set<Servo>
 
     // Getter/setter manipulations
     /**
@@ -33,21 +33,9 @@ interface IGlyphManipulator {
      * When set to a negative value, the flywheels push the glyph out of the feeder.
      */
     var collectorPower: Double
-    /**
-     * The power of the bucket lift motors.
-     * When set to a positive value, the bucket raises.
-     * When set to a negative value, the bucket lowers.
-     */
-    var liftPower: Double
 
     /**
-     * Unfolds the collectorIn flywheels. Best performed right after the start of a game.
-     * Once unfolded, this method has no effect.
-     */
-    fun unfoldCollector()
-
-    /**
-     * Analog controls for the bucket-tilting servo.
+     * Analog controls for the bucket-tilting servos.
      *
      * POURING_POS represents the position when the platform is lifted.
      * UNPOURING_POS represents the position when the platform is flat.
@@ -57,13 +45,10 @@ interface IGlyphManipulator {
     var bucketPourPos: Double
 
     /**
-     * Binary controls for the clamp of the bucket.
+     * Analog controls for the rectifier servos.
      *
-     * `true` = pressing against glyph, `false` = released, not holding glyph
-     *
+     * RECTIFYING_POS represents the position when the rectifier is engaged.
+     * UNRECTIFYING_POS represents the position when the rectifier is out of the way.
      */
-    // A shadow variable is recommended for implementation.
-    var bucketClamping: Boolean
-
-    var collectorHugging: Boolean
+    var rectifierPos: Double
 }

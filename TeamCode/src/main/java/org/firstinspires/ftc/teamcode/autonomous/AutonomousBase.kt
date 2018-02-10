@@ -54,11 +54,6 @@ open class AutonomousBase(private val allianceColor: AllianceColor,
     override fun runOpMode() {
         if (!initAll()) return
 
-        with(Hardware) {
-            // The glyph clamp will be preloaded with a glyph. Close the clamp to hold it.
-            Hardware.glypher.bucketClamping = true
-        }
-
         waitForStart()
 
         if (runTasksArbitrarily) {
@@ -153,7 +148,7 @@ open class AutonomousBase(private val allianceColor: AllianceColor,
 
         @Task(priority = 30.0 / 85.0, reliability = 0.75)
         fun knockJewel(opMode: AutonomousBase): Boolean {
-            /*with(Hardware.knocker) {
+            with(Hardware.knocker) {
                 opMode.navigator.beginJewelKnock()
 
                 lowerArm()
@@ -170,8 +165,7 @@ open class AutonomousBase(private val allianceColor: AllianceColor,
 
                 opMode.navigator.endJewelKnock()
                 return colorDetected != null
-            }*/
-            return true
+            }
         }
 
         @Task(priority = 10.0 / 85.0, reliability = 0.9)
@@ -182,7 +176,7 @@ open class AutonomousBase(private val allianceColor: AllianceColor,
             return true
         }
 
-        /*@Task(priority = 30.0 / 85.0, reliability = 0.7)
+        @Task(priority = 30.0 / 85.0, reliability = 0.7)
         fun readVuMark(opMode: AutonomousBase): Boolean {
             with(opMode) {
                 vuforia.startTracking()
@@ -198,15 +192,14 @@ open class AutonomousBase(private val allianceColor: AllianceColor,
                 // If its representation is known, it's successful
                 return vuMark != RelicRecoveryVuMark.UNKNOWN
             }
-        }*/
+        }
 
         @Task(priority = 15.0 / 85.0, reliability = 0.7)
         fun placeInCryptoBox(opMode: AutonomousBase): Boolean {
             opMode.navigator.goToCryptoBox(opMode.vuMark ?: RelicRecoveryVuMark.CENTER)
 
-            Hardware.glypher.bucketPourPos = IGlyphManipulator.POURING_POS
-            Hardware.glypher.bucketClamping = false
-            Hardware.glypher.bucketPourPos = IGlyphManipulator.UNPOURING_POS
+            Hardware.glypher.bucketPourPos = IGlyphManipulator.POUR_MAXIMUM
+            Hardware.glypher.bucketPourPos = IGlyphManipulator.POUR_MINIMUM
 
             return true
         }

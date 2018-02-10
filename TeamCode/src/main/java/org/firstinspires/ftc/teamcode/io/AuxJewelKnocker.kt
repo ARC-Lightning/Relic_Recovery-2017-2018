@@ -39,11 +39,22 @@ class AuxJewelKnocker(val telemetry: ITelemetry,
 
     }
 
+    init {
+        // Lock the servo upon start
+        raiseArm()
+    }
+
     override fun lowerArm() {
         arm.position = loweredPosition
     }
 
     override fun detect(): AllianceColor? {
+        // Enable LED
+        color.enableLed(true)
+
+        // Allow values to stabilize
+        Thread.sleep(600)
+
         val isBlue = color.blue() > colorThreshold
         val isRed = color.red() > colorThreshold
 
