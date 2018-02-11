@@ -21,7 +21,8 @@ interface IGlyphManipulator {
     }
 
     // Hardware output devices
-    val collectors: Set<DcMotor>
+    val collectorLeft: DcMotor
+    val collectorRight: DcMotor
     val bucketPour: Servo
     val offsideBucketPour: Servo
     val glyphRectifiers: Set<Servo>

@@ -25,18 +25,20 @@ class AuxJewelKnocker(val telemetry: ITelemetry,
     companion object {
 
         // Servo positions
-        val raisedPosition: Double = 0.0
-        val loweredPosition: Double = 0.35
+        const val raisedPosition: Double = 1.0
+        const val loweredPosition: Double = 0.38
 
         // Color sensor data decision threshold
-        val colorThreshold = 6
+        const val colorThreshold = 6
 
         // Direction in which the color sensor is facing (toward front of robot or back?)
-        val isColorSensorFacingFront = false
+        const val isColorSensorFacingFront = false
 
         // How far it should go when knocking a jewel off (in inches)
-        val knockDistance = 3.0
+        const val knockDistance = 3.0
 
+        // How long does it take for the servo to go from up/down to down/up?
+        const val servoDelay = 500
     }
 
     init {
@@ -46,6 +48,7 @@ class AuxJewelKnocker(val telemetry: ITelemetry,
 
     override fun lowerArm() {
         arm.position = loweredPosition
+        Thread.sleep(servoDelay.toLong())
     }
 
     override fun detect(): AllianceColor? {
@@ -81,5 +84,6 @@ class AuxJewelKnocker(val telemetry: ITelemetry,
 
     override fun raiseArm() {
         arm.position = raisedPosition
+        Thread.sleep(servoDelay.toLong())
     }
 }

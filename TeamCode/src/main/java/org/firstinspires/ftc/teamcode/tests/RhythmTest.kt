@@ -21,16 +21,22 @@ class RhythmTest : LinearOpMode() {
     companion object {
         /* POSITIONS and POWER */
         const val POUR_DOWN = 0.0
-        const val POUR_UP = 0.2
-        const val COLLECTOR_POWER = 0.4
+        const val POUR_UP = 0.4
+        const val COLLECTOR_POWER = 0.5
 
         /* RHYTHM SPEED */
-        const val BPM = 440.0
+        const val BPM = 300.0
     }
 
+    val drum = DrumAlternator(this)
+
     /* RHYTHM */
-    val pourPhrase = arrayOf(4.0, 2.0, 2.0, 4.0, 6.0)
-    val collectorPhrase = arrayOf(4.0, 4.0)
+    val piece = arrayOf(
+            drum::alternate to arrayOf(2.0, 2.0, 2.0, 2.0),
+            this::activateCollectors to arrayOf(2.0, 2.0, 1.0, 1.0, 2.0),
+            drum::alternate to arrayOf(2.0, 2.0, 2.0, 2.0),
+            this::activateCollectors to arrayOf(2.0, 2.0, 1.0, 1.0, 2.0)
+    )
 
     override fun runOpMode() {
         // Define electronics
@@ -49,13 +55,15 @@ class RhythmTest : LinearOpMode() {
         telemetry.isAutoClear = false
 
         // Initialize instruments
-        val drum = DrumAlternator(this)
+        leftCollector.zeroPowerBehavior = DcMotor.ZeroPowerBehavior.BRAKE
+        rightCollector.zeroPowerBehavior = DcMotor.ZeroPowerBehavior.BRAKE
 
         waitForStart()
 
         // Run through phrases
-        runPhrase(drum::alternate, pourPhrase)
-        runPhrase(this::activateCollectors, collectorPhrase)
+        for ((func, phrase) in piece) {
+            runPhrase(func, phrase)
+        }
     }
 
     fun activateCollectors() {

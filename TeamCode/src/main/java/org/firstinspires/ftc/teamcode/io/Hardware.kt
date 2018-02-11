@@ -56,10 +56,8 @@ object Hardware {
 
                 // GlyphManipulator instance
                 glypher = GlyphManipulator(
-                        collectors = setOf(
-                                dcMotor.get("FlywheelLeft"),
-                                dcMotor.get("FlywheelRight")
-                        ),
+                        collectorLeft = dcMotor.get("FlywheelLeft"),
+                        collectorRight = dcMotor.get("FlywheelRight"),
                         bucketPour = servo.get("BucketPour"),
                         offsideBucketPour = servo.get("OffsideBucketPour"),
                         glyphRectifiers = setOf(

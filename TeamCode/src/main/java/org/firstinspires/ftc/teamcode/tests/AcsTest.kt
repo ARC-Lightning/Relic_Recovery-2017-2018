@@ -7,14 +7,17 @@ import org.locationtech.jts.algorithm.Angle
 import org.locationtech.jts.math.Vector2D
 
 /**
- * Created by michael on 12/17/17.
- * TODO document
+ * Tests the drivetrain implementation and the hardware for correct operation of the motor encoders.
+ *
+ * @author Michael Peng
+ * For team: 4410
+ *
  */
-@TeleOp(name = "AcsTest", group = "Pragmaticos")
-class AcsTest : LinearOpMode() {
+@TeleOp(name = "EncoderTest", group = "Pragmaticos")
+class EncoderTest : LinearOpMode() {
 
     override fun runOpMode() {
-        Hardware.init(this, 0.7)
+        Hardware.init(this, 0.5)
 
         waitForStart()
 

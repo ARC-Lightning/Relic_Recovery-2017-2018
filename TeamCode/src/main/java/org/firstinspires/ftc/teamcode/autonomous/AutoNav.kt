@@ -55,7 +55,7 @@ class AutoNav : IAutoNav {
          */
         const val JEWEL_ACCESS_OFFSET = 0.3
 
-        const val DRIVE_POWER = 0.7
+        const val DRIVE_POWER = 0.5
     }
 
     private val isStartingOnCorner: Boolean

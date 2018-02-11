@@ -30,9 +30,9 @@ class TeleOpMain : OpMode() {
     object Config {
         const val motorPower = 0.9
         const val turnSpeed = 0.95
-        const val glyphCollectorPower = 0.4
+        const val glyphCollectorPower = 0.3
         const val stickAxisToBinaryThreshold = 0.3
-        const val bucketPourSensitivity = 0.015
+        const val bucketPourSensitivity = 0.01
         const val rectifierSensitivity = 0.02
 
     }

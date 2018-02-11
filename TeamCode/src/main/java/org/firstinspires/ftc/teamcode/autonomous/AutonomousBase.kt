@@ -6,7 +6,6 @@ import org.firstinspires.ftc.robotcore.external.navigation.RelicRecoveryVuMark
 import org.firstinspires.ftc.teamcode.AllianceColor
 import org.firstinspires.ftc.teamcode.io.DynamicConfig
 import org.firstinspires.ftc.teamcode.io.Hardware
-import org.firstinspires.ftc.teamcode.io.IGlyphManipulator
 
 /**
  * The base LinearOpMode procedure in which autonomous operation is performed.
@@ -31,10 +30,8 @@ open class AutonomousBase(private val allianceColor: AllianceColor,
     companion object {
         val motorPower = 0.9
         val taskSequence = listOf(
-                // "knockJewel",
-                //TODO add "readVuMark",
-                "placeInCryptoBox",
                 "parkInSafeZone"
+                //TODO add "readVuMark",
         )
         val runTasksArbitrarily = false
     }
@@ -172,11 +169,11 @@ open class AutonomousBase(private val allianceColor: AllianceColor,
         fun parkInSafeZone(opMode: AutonomousBase): Boolean {
             opMode.navigator.goToCryptoBox(RelicRecoveryVuMark.CENTER)
             opMode.sleep(2000)
-            opMode.navigator.returnFromCryptoBox(RelicRecoveryVuMark.CENTER)
+//            opMode.navigator.returnFromCryptoBox(RelicRecoveryVuMark.CENTER)
             return true
         }
 
-        @Task(priority = 30.0 / 85.0, reliability = 0.7)
+        /*@Task(priority = 30.0 / 85.0, reliability = 0.7)
         fun readVuMark(opMode: AutonomousBase): Boolean {
             with(opMode) {
                 vuforia.startTracking()
@@ -199,10 +196,11 @@ open class AutonomousBase(private val allianceColor: AllianceColor,
             opMode.navigator.goToCryptoBox(opMode.vuMark ?: RelicRecoveryVuMark.CENTER)
 
             Hardware.glypher.bucketPourPos = IGlyphManipulator.POUR_MAXIMUM
+            opMode.sleep(1000)
             Hardware.glypher.bucketPourPos = IGlyphManipulator.POUR_MINIMUM
 
             return true
-        }
+        }*/
     }
 }
 

@@ -15,13 +15,18 @@ import org.firstinspires.ftc.teamcode.io.IGlyphManipulator.Companion.POUR_MINIMU
  * FIRST - Gracious Professionalism
  */
 class GlyphManipulator(
-        override val collectors: Set<DcMotor>,
+        override val collectorLeft: DcMotor,
+        override val collectorRight: DcMotor,
         override val bucketPour: Servo,
         override val offsideBucketPour: Servo,
         override val glyphRectifiers: Set<Servo>) : IGlyphManipulator {
 
     // CONFIGURATIONS
     companion object {
+
+        // Side-dependent collector power multipliers
+        val LEFT_COLLECTOR_POWER = 1.0
+        val RIGHT_COLLECTOR_POWER = 1.1
 
         // Rectifier servo positions
         val RECT_MAXIMUM = 1.0
@@ -50,7 +55,8 @@ class GlyphManipulator(
      * Applies the values of all shadow variables to hardware.
      */
     private fun applyState() {
-        collectors.forEach { it.power = _collectorPower }
+        collectorLeft.power = _collectorPower * LEFT_COLLECTOR_POWER
+        collectorRight.power = _collectorPower * RIGHT_COLLECTOR_POWER
         bucketPour.position = _bucketPourPos
         offsideBucketPour.position = _bucketPourPos
         glyphRectifiers.forEach { it.position = _rectifierPos }

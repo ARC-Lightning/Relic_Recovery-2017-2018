@@ -48,7 +48,7 @@ class Drivetrain(
         private val TICKS_PER_REVOLUTION = 280.0
         private val INCHES_PER_REVOLUTION = 2.5
         private val TICKS_PER_CIRCULAR_SPIN = TICKS_PER_REVOLUTION * 4
-        private val COUNT_USING_TIME = true
+        private val COUNT_USING_TIME = false
         private val MOVE_MS_PER_INCH = 40
         private val TURN_MS_PER_CIRCLE = 1000
     }
