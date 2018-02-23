@@ -3,9 +3,8 @@ package org.firstinspires.ftc.teamcode.teleop
 import com.qualcomm.robotcore.eventloop.opmode.OpMode
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp
 import com.qualcomm.robotcore.util.Range
-import org.firstinspires.ftc.teamcode.io.DynamicConfig
+import org.firstinspires.ftc.teamcode.config.ConfigFile
 import org.firstinspires.ftc.teamcode.io.Hardware
-import org.firstinspires.ftc.teamcode.io.IGlyphManipulator
 import org.locationtech.jts.math.Vector2D
 
 /**
@@ -27,49 +26,44 @@ import org.locationtech.jts.math.Vector2D
 class TeleOpMain : OpMode() {
 
     // Configuration values
-    object Config {
-        const val motorPower = 0.9
-        const val turnSpeed = 0.95
-        const val glyphCollectorPower = 0.3
-        const val stickAxisToBinaryThreshold = 0.3
-        const val bucketPourSensitivity = 0.01
-        const val rectifierSensitivity = 0.02
+    class Config {
+        private val file =
+                ConfigFile("TeleOp/config.properties")
+
+        val motorPower          = file.getDouble("MotorPower")
+        val turnSpeed           = file.getDouble("TurnSpeed")
+        val glyphCollectorPower = file.getDouble("GlyphCollectorPower")
+        val pourSensitivity     = file.getDouble("PourSensitivity")
+        val rectSensitivity     = file.getDouble("RectifierSensitivity")
 
     }
 
     object InputColumns {
         lateinit var collectorIn: ChangeBasedInputColumn<Boolean>
         lateinit var collectorOut: ChangeBasedInputColumn<Boolean>
+        lateinit var precisionMove: ChangeBasedInputColumn<Boolean>
     }
 
-    lateinit private var padListener: GamepadListener
+    private lateinit var config: Config
 
     override fun init() {
         // Initialize systems
-        Hardware.init(this, Config.motorPower)
-        padListener = GamepadListener(gamepad1, DynamicConfig.Mapping.mappings)
+        config = Config()
+        Hardware.init(this, config.motorPower)
 
         // Initialize toggle input surfaces, which currently includes collectorIn use (A, gamepad 2)
         InputColumns.collectorIn = ChangeBasedInputColumn { gamepad2.a }
         InputColumns.collectorOut = ChangeBasedInputColumn { gamepad2.b }
+        InputColumns.precisionMove = ChangeBasedInputColumn { gamepad1.x }
 
         // Lock the jewel arm
         Hardware.knocker.raiseArm()
-    }
-
-    override fun init_loop() {
-        padListener.update()
     }
 
     override fun loop() {
         // Gamepad mappings
         with(Hardware) {
             fun Boolean.int() = if (this) 1.0 else 0.0
-            fun stickAxisToBinary(axisValue: Double, previous: Boolean): Boolean = when {
-                axisValue > Config.stickAxisToBinaryThreshold -> true
-                axisValue < -Config.stickAxisToBinaryThreshold -> false
-                else -> previous
-            }
 
             with(gamepad1) {
                 // Drivetrain movement
@@ -78,20 +72,26 @@ class TeleOpMain : OpMode() {
                         -left_stick_y.toDouble())
                 telemetry.write("Move vector", moveVec.toString())
 
-                val turnPower = right_stick_x * Config.motorPower * Config.turnSpeed
+                val turnPower = right_stick_x * config.motorPower * config.turnSpeed
                 telemetry.write("Turn power", turnPower.toString())
 
-                drivetrain.actuate(moveVec, moveVec.length() / Math.sqrt(2.0),
+                drivetrain.actuate(moveVec, moveVec.length() / Math.sqrt(2.0) * config.motorPower,
                         true, turnPower)
 
                 // Bumpers -> rectifier
                 glypher.rectifierPos = Range.clip(
                         glypher.rectifierPos + (left_trigger - right_trigger) *
-                                Config.rectifierSensitivity, 0.0, 1.0)
+                                config.rectSensitivity, 0.0, 1.0)
 
                 if (back) {
                     Hardware.knocker.raiseArm()
                 }
+
+                // X button -> toggle -> precise movement
+                InputColumns.precisionMove.onChange { _, new -> if (new)
+                    drivetrain.isUsingPrecisePower = !drivetrain.isUsingPrecisePower
+                }
+
             }
 
             with(gamepad2) {
@@ -102,16 +102,15 @@ class TeleOpMain : OpMode() {
                 // Bucket pour -> Right stick y, forward = vertical, backward = laid down
                 glypher.bucketPourPos = Range.clip(
                         glypher.bucketPourPos - right_stick_y.toDouble() *
-                                Config.bucketPourSensitivity, IGlyphManipulator.POUR_MINIMUM,
-                        IGlyphManipulator.POUR_MAXIMUM)
+                                config.pourSensitivity, 0.0, 1.0)
 
                 // Collector toggle between idle & pulling in -> A button
                 // Push out -> B button
                 InputColumns.collectorIn.onChange { _, new ->
-                    glypher.collectorPower = new.int() * Config.glyphCollectorPower
+                    glypher.collectorPower = new.int() * config.glyphCollectorPower
                 }
                 InputColumns.collectorOut.onChange { _, new ->
-                    glypher.collectorPower = new.int() * -Config.glyphCollectorPower
+                    glypher.collectorPower = new.int() * -config.glyphCollectorPower
                 }
                 // Temporary solution: TODO
             }

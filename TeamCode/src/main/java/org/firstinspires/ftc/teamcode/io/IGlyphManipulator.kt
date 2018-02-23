@@ -13,13 +13,6 @@ import com.qualcomm.robotcore.hardware.Servo
  */
 interface IGlyphManipulator {
 
-    companion object {
-        // Maximum/minimum servo position for BucketPours, designed to protect the bot
-        // bucketPour & offsideBucketPour will have a scaleRange that corresponds to these values
-        val POUR_MAXIMUM = 1.0
-        val POUR_MINIMUM = 0.0
-    }
-
     // Hardware output devices
     val collectorLeft: DcMotor
     val collectorRight: DcMotor

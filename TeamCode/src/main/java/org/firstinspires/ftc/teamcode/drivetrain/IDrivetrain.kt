@@ -70,6 +70,13 @@ interface IDrivetrain {
     val defaultPower: Double
 
     /**
+     * Whether precise actuation is engaged. When it is engaged, all output power values from TeleOp
+     * functions are multiplied by an implementation-specific value (0,1), which reduces movement
+     * speeds.
+     */
+    var isUsingPrecisePower: Boolean
+
+    /**
      * This enum contains values that point to each motor in the drivetrain.
      * This is useful for directly sending commands to the individual motors.
      */

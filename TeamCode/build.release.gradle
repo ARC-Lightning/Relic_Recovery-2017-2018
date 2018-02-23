@@ -2,10 +2,13 @@ repositories {
     maven {
         url 'https://repo.locationtech.org/content/repositories/jts-snapshots'
     }
+    mavenCentral()
 }
 
 dependencies {
     compile 'org.locationtech.jts:jts-core:1.15.0-SNAPSHOT'
+    // https://mvnrepository.com/artifact/com.sun.phobos/jsr223-api
+    compile group: 'com.sun.phobos', name: 'jsr223-api', version: '1.0'
     compile project(':FtcRobotController')
     compile (name: 'RobotCore-release', ext: 'aar')
     compile (name: 'Hardware-release', ext: 'aar')

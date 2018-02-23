@@ -9,9 +9,9 @@ import org.firstinspires.ftc.teamcode.telemetry.ITelemetry
 import org.firstinspires.ftc.teamcode.telemetry.Telemetry
 
 /**
- * Defines modules and hardware necessary to run both Autonomous and TeleOp.
- * Includes all code that is used in both modes.
- * Both AutonomousMain and TeleOpMain should have an instance of this class.
+ * Declares modules and hardware necessary to run both Autonomous and TeleOp.
+ * Includes all code shared by both modes.
+ * Both AutonomousBase and TeleOpMain should call `init()` as soon as the OpModes are started.
  *
  * @author Michael Peng
  * For team: 4410 (Lightning)

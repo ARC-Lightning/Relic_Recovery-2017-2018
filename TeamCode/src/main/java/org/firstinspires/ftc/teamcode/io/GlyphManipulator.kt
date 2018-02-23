@@ -3,8 +3,7 @@ package org.firstinspires.ftc.teamcode.io
 import com.qualcomm.robotcore.hardware.DcMotor
 import com.qualcomm.robotcore.hardware.Servo
 import com.qualcomm.robotcore.util.Range
-import org.firstinspires.ftc.teamcode.io.IGlyphManipulator.Companion.POUR_MAXIMUM
-import org.firstinspires.ftc.teamcode.io.IGlyphManipulator.Companion.POUR_MINIMUM
+import org.firstinspires.ftc.teamcode.config.ConfigFile
 
 /**
  * A generic implementation of `IGlyphManipulator`.
@@ -22,30 +21,28 @@ class GlyphManipulator(
         override val glyphRectifiers: Set<Servo>) : IGlyphManipulator {
 
     // CONFIGURATIONS
-    companion object {
+    private val config = ConfigFile("GlyphManipulator/config.properties")
+    private val rectMax             = config.getDouble("RectifierMax")
+    private val rectMin             = config.getDouble("RectifierMin")
+    private val leftCollectorPower  = config.getDouble("LeftCollectorPower")
+    private val rightCollectorPower = config.getDouble("RightCollectorPower")
+    private val pourMax             = config.getDouble("PourMax")
+    private val pourMin             = config.getDouble("PourMin")
 
-        // Side-dependent collector power multipliers
-        val LEFT_COLLECTOR_POWER = 1.0
-        val RIGHT_COLLECTOR_POWER = 1.1
-
-        // Rectifier servo positions
-        val RECT_MAXIMUM = 1.0
-        val RECT_MINIMUM = 0.5
-    }
 
     // Shadow values for avoiding unnecessary calls to hardware
     // Values to apply during initialization
     private var _collectorPower: Double = 0.0   // DO NOT CHANGE INITIAL VALUE - DANGEROUS
     private var _bucketPourPos: Double = 0.0    // DO NOT CHANGE INITIAL VALUE - DANGEROUS
-    private var _rectifierPos: Double = RECT_MAXIMUM
+    private var _rectifierPos: Double = rectMax
 
     // Initialization should take place to ensure that shadow values and hardware state match
     // before applyState is called.
     init {
         // Apply scaleRange
-        bucketPour.scaleRange(POUR_MINIMUM, POUR_MAXIMUM)
-        offsideBucketPour.scaleRange(POUR_MINIMUM, POUR_MAXIMUM)
-        glyphRectifiers.forEach { it.scaleRange(RECT_MINIMUM, RECT_MAXIMUM) }
+        bucketPour.scaleRange(pourMin, pourMax)
+        offsideBucketPour.scaleRange(pourMin, pourMax)
+        glyphRectifiers.forEach { it.scaleRange(rectMin, rectMax) }
 
         applyState()
         Hardware.telemetry.write("GlyphManipulator", "Initialized")
@@ -55,8 +52,8 @@ class GlyphManipulator(
      * Applies the values of all shadow variables to hardware.
      */
     private fun applyState() {
-        collectorLeft.power = _collectorPower * LEFT_COLLECTOR_POWER
-        collectorRight.power = _collectorPower * RIGHT_COLLECTOR_POWER
+        collectorLeft.power = _collectorPower * leftCollectorPower
+        collectorRight.power = _collectorPower * rightCollectorPower
         bucketPour.position = _bucketPourPos
         offsideBucketPour.position = _bucketPourPos
         glyphRectifiers.forEach { it.position = _rectifierPos }

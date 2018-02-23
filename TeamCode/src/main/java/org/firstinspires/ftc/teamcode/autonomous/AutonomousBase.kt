@@ -4,7 +4,6 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode
 import org.firstinspires.ftc.robotcore.external.navigation.RelicRecoveryVuMark
 import org.firstinspires.ftc.teamcode.AllianceColor
-import org.firstinspires.ftc.teamcode.io.DynamicConfig
 import org.firstinspires.ftc.teamcode.io.Hardware
 
 /**
@@ -23,8 +22,8 @@ import org.firstinspires.ftc.teamcode.io.Hardware
  *
  * FIRST - Gracious Professionalism
  */
-open class AutonomousBase(private val allianceColor: AllianceColor,
-                          private val isStartingLeft: Boolean) : LinearOpMode() {
+open class AutonomousBase(val allianceColor: AllianceColor,
+                          val isStartingLeft: Boolean) : LinearOpMode() {
 
     // CONFIGURATIONS
     companion object {
@@ -34,6 +33,10 @@ open class AutonomousBase(private val allianceColor: AllianceColor,
                 //TODO add "readVuMark",
         )
         val runTasksArbitrarily = false
+
+        // Statically available properties
+        lateinit var alliance: AllianceColor
+        var startingLeft: Boolean = true
     }
 
     lateinit var navigator: IAutoNav
@@ -108,10 +111,9 @@ open class AutonomousBase(private val allianceColor: AllianceColor,
                 Hardware.telemetry.autoClear = false
                 Hardware.telemetry.autoUpdate = true
 
-                // Assign given parameters to DynamicConfig
-                DynamicConfig.alliance = allianceColor
-                DynamicConfig.isStartingLeft = isStartingLeft
-                // TODO deprecate DynamicConfig?
+                // Assign properties to companion object
+                alliance = allianceColor
+                startingLeft = isStartingLeft
 
                 Hardware.telemetry.data("Tasks", decider.nextTasks)
             }
@@ -155,7 +157,7 @@ open class AutonomousBase(private val allianceColor: AllianceColor,
                 // If no concrete conclusion arises from the data, fail this task
                 if (colorDetected != null) {
                     // Knock off the jewel of color opposite to the team we're on
-                    removeJewel(colorDetected != DynamicConfig.alliance)
+                    removeJewel(colorDetected != alliance)
                 }
 
                 raiseArm()
@@ -195,9 +197,9 @@ open class AutonomousBase(private val allianceColor: AllianceColor,
         fun placeInCryptoBox(opMode: AutonomousBase): Boolean {
             opMode.navigator.goToCryptoBox(opMode.vuMark ?: RelicRecoveryVuMark.CENTER)
 
-            Hardware.glypher.bucketPourPos = IGlyphManipulator.POUR_MAXIMUM
+            Hardware.glypher.bucketPourPos = IGlyphManipulator.pourMax
             opMode.sleep(1000)
-            Hardware.glypher.bucketPourPos = IGlyphManipulator.POUR_MINIMUM
+            Hardware.glypher.bucketPourPos = IGlyphManipulator.pourMin
 
             return true
         }*/

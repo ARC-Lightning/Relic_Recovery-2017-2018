@@ -4,6 +4,7 @@ import com.qualcomm.robotcore.hardware.DcMotor
 import com.qualcomm.robotcore.hardware.DcMotorSimple
 import com.qualcomm.robotcore.util.Range
 import com.qualcomm.robotcore.util.RobotLog
+import org.firstinspires.ftc.teamcode.config.ConfigFile
 import org.locationtech.jts.algorithm.Angle
 import org.locationtech.jts.math.Vector2D
 
@@ -44,15 +45,29 @@ class Drivetrain(
     }
 
     // CONFIGURATION
-    companion object {
-        private val TICKS_PER_REVOLUTION = 280.0
-        private val INCHES_PER_REVOLUTION = 2.5
-        private val TICKS_PER_CIRCULAR_SPIN = TICKS_PER_REVOLUTION * 4
-        private val COUNT_USING_TIME = false
-        private val MOVE_MS_PER_INCH = 40
-        private val TURN_MS_PER_CIRCLE = 1000
+    class Config {
+        val loader = ConfigFile("Drivetrain/config.properties")
+
+        val ticksPerRevolution      = loader.getInteger("TicksPerRevolution")
+        val inchesPerRevolution     = loader.getDouble("InchesPerRevolution")
+        val ticksPerCircularSpin    = loader.getInteger("TicksPerCircularSpin")
+        val countUsingTime          = loader.getBoolean("CountUsingTime")
+        val msPerMovedInch          = loader.getInteger("MsPerMovedInch")
+        val msPerCircularSpin       = loader.getInteger("MsPerCircularSpin")
+        val precisePowerMultiplier  = loader.getDouble("PrecisePowerMultiplier")
     }
+
+    private val config = Config()
     // END CONFIGURATION
+
+    /**
+     * When true, this multiplies the final power output of the motors by a value specified in the config
+     * (as "PrecisePowerMultiplier"). This feature intends to help the driver make precise movements
+     * when necessary, such as when unloading glyphs.
+     */
+    override var isUsingPrecisePower: Boolean = false
+    private val preciseMultiplier: Double
+            get() = if (isUsingPrecisePower) config.precisePowerMultiplier else 1.0
 
     /**
      * Defines a pair of diagonal motors. Useful for Mecanum manipulation.
@@ -173,7 +188,7 @@ class Drivetrain(
 
     // Same as startMove(), except without mode setting. Universal across encoder and non-encoder.
     private fun setMotorPowers(direction: Vector2D, multiplier: Double) {
-        // Grab the pair -> power map, then set the power of each motor in each pair to its mapped
+        // Grab the pair -> power properties, then set the power of each motor in each pair to its mapped
         // value.
         getMovementPowers(direction, multiplier).entries
                 // For each pair -> power entry
@@ -189,7 +204,7 @@ class Drivetrain(
         //      i in      IPR in    TPR tick
         // t = ─────── / ─────── * ──────────
         //        1        1 rot      1 rot
-        val relativeTicks = relativeInch / INCHES_PER_REVOLUTION * TICKS_PER_REVOLUTION
+        val relativeTicks = relativeInch / config.inchesPerRevolution * config.ticksPerRevolution
         motor.targetPosition = motor.currentPosition + Math.round(relativeTicks).toInt()
         RobotLog.dd(motor.connectionInfo, "POS_SET C=${motor.currentPosition} T=$relativeTicks")
     }
@@ -234,10 +249,10 @@ class Drivetrain(
 
         RobotLog.i("Moving to $vector")
 
-        if (COUNT_USING_TIME) {
+        if (config.countUsingTime) {
             setMotorMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER)
 
-            val waitTime = MOVE_MS_PER_INCH * vector.length() / power
+            val waitTime = config.msPerMovedInch * vector.length() / power
 
             setMotorPowers(vector, power)
             Thread.sleep(waitTime.toLong())
@@ -295,7 +310,7 @@ class Drivetrain(
     override fun startMove(direction: Vector2D, power: Double) {
         //this.setUsingEncoders(false)
         this.setMotorMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER)
-        this.setMotorPowers(direction, power)
+        this.setMotorPowers(direction, power * preciseMultiplier)
     }
 
     /**
@@ -326,9 +341,9 @@ class Drivetrain(
         if (radians == 0.0)
             return
 
-        if (COUNT_USING_TIME) {
+        if (config.countUsingTime) {
             this.setMotorMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER)
-            val waitTime = TURN_MS_PER_CIRCLE * (Math.abs(radians) / 2 * Math.PI) / power
+            val waitTime = config.msPerCircularSpin * (Math.abs(radians) / 2 * Math.PI) / power
 
             val (leftPower, rightPower) = if (radians < 0.0) {
                 power to -power
@@ -352,7 +367,7 @@ class Drivetrain(
 
             // Turn the radians into relative ticks for one side of the drivetrain, then the other side
             //   is the negation of that value.
-            var tickMagnitude = Math.round(Math.abs(Angle.normalize(radians)) / (2 * Math.PI) * TICKS_PER_CIRCULAR_SPIN)
+            var tickMagnitude = Math.round(Math.abs(Angle.normalize(radians)) / (2 * Math.PI) * config.ticksPerCircularSpin)
 
             // tickMagnitude is always applied to the right side because the unit circle is
             //   counter-clockwise. If the input value is positive, then tickMagnitude shall be negated.
@@ -391,7 +406,7 @@ class Drivetrain(
             }
 
     override fun startTurn(power: Double) {
-        val validPower = Range.clip(power, -1.0, 1.0)
+        val validPower = Range.clip(power, -1.0, 1.0) * preciseMultiplier
 
         this.setMotorMode(com.qualcomm.robotcore.hardware.DcMotor.RunMode.RUN_WITHOUT_ENCODER)
 
@@ -403,9 +418,7 @@ class Drivetrain(
                 IDrivetrain.MotorPtr.FRONT_RIGHT,
                 IDrivetrain.MotorPtr.REAR_RIGHT
         ) {
-
             it.power = validPower
-
         }
 
         forEachOf(
@@ -437,10 +450,10 @@ class Drivetrain(
             powers.entries.forEach { (ptr, pwr) -> powers[ptr] = pwr / scale }
         }
 
-        // Step 4: Assign powers to motors
+        // Step 4: Assign powers to motors, with preciseMultiplier
         setMotorMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER)
         for ((ptr, pwr) in powers) {
-            this.getMotor(ptr).power = pwr
+            this.getMotor(ptr).power = pwr * preciseMultiplier
         }
     }
 

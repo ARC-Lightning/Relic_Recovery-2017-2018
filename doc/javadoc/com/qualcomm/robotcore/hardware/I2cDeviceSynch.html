@@ -281,7 +281,7 @@ extends <a href="../../../../com/qualcomm/robotcore/hardware/I2cDeviceSynchSimpl
 </tr>
 <tr id="i6" class="altColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../com/qualcomm/robotcore/hardware/I2cDeviceSynch.html#setHeartbeatInterval-int-">setHeartbeatInterval</a></span>(int&nbsp;ms)</code>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../com/qualcomm/robotcore/hardware/I2cDeviceSynch.html#setHeartbeatInterval-int-">setHeartbeatInterval</a></span>(int&nbsp;beats)</code>
 <div class="block">Sets the interval within which communication must be received by the I2C device lest
  a timeout may occur.</div>
 </td>
@@ -448,13 +448,13 @@ extends <a href="../../../../com/qualcomm/robotcore/hardware/I2cDeviceSynchSimpl
 <ul class="blockList">
 <li class="blockList">
 <h4>setHeartbeatInterval</h4>
-<pre>void&nbsp;setHeartbeatInterval(int&nbsp;ms)</pre>
+<pre>void&nbsp;setHeartbeatInterval(int&nbsp;beats)</pre>
 <div class="block">Sets the interval within which communication must be received by the I2C device lest
  a timeout may occur. The default heartbeat interval is zero, signifying that no heartbeat
  is maintained.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>ms</code> - the new hearbeat interval, in milliseconds</dd>
+<dd><code>beats</code> - the new hearbeat interval, in milliseconds</dd>
 <dt><span class="seeLabel">See Also:</span></dt>
 <dd><a href="../../../../com/qualcomm/robotcore/hardware/I2cDeviceSynch.html#getHeartbeatInterval--"><code>getHeartbeatInterval()</code></a></dd>
 </dl>

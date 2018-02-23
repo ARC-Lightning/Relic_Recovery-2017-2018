@@ -2,7 +2,6 @@ package org.firstinspires.ftc.teamcode.autonomous
 
 import org.firstinspires.ftc.robotcore.external.navigation.RelicRecoveryVuMark
 import org.firstinspires.ftc.teamcode.AllianceColor
-import org.firstinspires.ftc.teamcode.io.DynamicConfig
 import org.firstinspires.ftc.teamcode.io.Hardware
 import org.locationtech.jts.algorithm.Angle
 import org.locationtech.jts.math.Vector2D
@@ -59,7 +58,7 @@ class AutoNav : IAutoNav {
     }
 
     private val isStartingOnCorner: Boolean
-        get() = DynamicConfig.isStartingLeft == (DynamicConfig.alliance == AllianceColor.RED)
+        get() = AutonomousBase.startingLeft == (AutonomousBase.alliance == AllianceColor.RED)
 
     /**
      * Currently performs the following to the given vector and returns the final modified output:
@@ -73,7 +72,7 @@ class AutoNav : IAutoNav {
         // Pipeline operation requires clone
         var out = Vector2D(vec)
 
-        if (DynamicConfig.alliance == AllianceColor.BLUE) {
+        if (AutonomousBase.alliance == AllianceColor.BLUE) {
             out = Vector2D(out.x, -out.y)
         }
 
@@ -96,7 +95,7 @@ class AutoNav : IAutoNav {
         else
         // Red needs to turn 180deg for CENTERED, Blue is lined up already
             finalizeVector(CRYPTOBOX_POSITION_CENTERED) to
-                    if (DynamicConfig.alliance == AllianceColor.BLUE) 0.0 else 180.0
+                    if (AutonomousBase.alliance == AllianceColor.BLUE) 0.0 else 180.0
     }
 
     private fun instructionsToColumn(vuMark: RelicRecoveryVuMark): Vector2D {
