@@ -4,7 +4,7 @@ import com.qualcomm.robotcore.hardware.DcMotor
 import com.qualcomm.robotcore.hardware.DcMotorSimple
 import com.qualcomm.robotcore.util.Range
 import com.qualcomm.robotcore.util.RobotLog
-import org.firstinspires.ftc.teamcode.config.ConfigFile
+import org.firstinspires.ftc.teamcode.config.ConfigUser
 import org.locationtech.jts.algorithm.Angle
 import org.locationtech.jts.math.Vector2D
 
@@ -45,16 +45,15 @@ class Drivetrain(
     }
 
     // CONFIGURATION
-    class Config {
-        val loader = ConfigFile("Drivetrain/config.properties")
+    class Config : ConfigUser("Drivetrain/config.properties") {
 
-        val ticksPerRevolution      = loader.getInteger("TicksPerRevolution")
-        val inchesPerRevolution     = loader.getDouble("InchesPerRevolution")
-        val ticksPerCircularSpin    = loader.getInteger("TicksPerCircularSpin")
-        val countUsingTime          = loader.getBoolean("CountUsingTime")
-        val msPerMovedInch          = loader.getInteger("MsPerMovedInch")
-        val msPerCircularSpin       = loader.getInteger("MsPerCircularSpin")
-        val precisePowerMultiplier  = loader.getDouble("PrecisePowerMultiplier")
+        val ticksPerRevolution      = file.getInteger("TicksPerRevolution")
+        val inchesPerRevolution     = file.getDouble("InchesPerRevolution")
+        val ticksPerCircularSpin    = file.getInteger("TicksPerCircularSpin")
+        val countUsingTime          = file.getBoolean("CountUsingTime")
+        val msPerMovedInch          = file.getInteger("MsPerMovedInch")
+        val msPerCircularSpin       = file.getInteger("MsPerCircularSpin")
+        val precisePowerMultiplier  = file.getDouble("PrecisePowerMultiplier")
     }
 
     private val config = Config()
@@ -241,7 +240,6 @@ class Drivetrain(
      */
     override fun move(vector: Vector2D, power: Double) {
         checkPower(power)
-        while (this.isBusy);
 
         // Vector with endpoint as origin means no movement
         if (vector.x == 0.0 && vector.y == 0.0)
@@ -394,6 +392,9 @@ class Drivetrain(
                 it.mode = DcMotor.RunMode.RUN_TO_POSITION
                 it.power = power
             }
+
+            while (this.isBusy);
+            stop()
         }
     }
 

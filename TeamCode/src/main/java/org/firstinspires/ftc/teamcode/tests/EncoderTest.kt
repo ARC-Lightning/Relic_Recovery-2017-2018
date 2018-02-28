@@ -17,7 +17,7 @@ import org.locationtech.jts.math.Vector2D
 class EncoderTest : LinearOpMode() {
 
     override fun runOpMode() {
-        Hardware.init(this, 0.5)
+        Hardware.init(this, 1.0)
 
         waitForStart()
 

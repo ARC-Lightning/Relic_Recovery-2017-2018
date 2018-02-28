@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.io
 import com.qualcomm.robotcore.hardware.ColorSensor
 import com.qualcomm.robotcore.hardware.Servo
 import org.firstinspires.ftc.teamcode.AllianceColor
+import org.firstinspires.ftc.teamcode.config.ConfigUser
 import org.firstinspires.ftc.teamcode.drivetrain.IDrivetrain
 import org.firstinspires.ftc.teamcode.telemetry.ITelemetry
 import org.locationtech.jts.math.Vector2D
@@ -22,24 +23,23 @@ class AuxJewelKnocker(val telemetry: ITelemetry,
                       override val arm: Servo) : IJewelKnocker {
 
     // CONFIGURATION
-    companion object {
+    class Config : ConfigUser("JewelKnocker/config.properties") {
+        val servoDelay = file.getInteger("ServoDelay")
 
         // Servo positions
-        const val raisedPosition: Double = 1.0
-        const val loweredPosition: Double = 0.38
+        val raisedPosition = file.getDouble("RaisedPosition")
+        val loweredPosition = file.getDouble("LoweredPosition")
 
-        // Color sensor data decision threshold
-        const val colorThreshold = 6
+        // When to be certain that it is one color?
+        val colorThreshold = file.getInteger("ColorThreshold")
 
-        // Direction in which the color sensor is facing (toward front of robot or back?)
-        const val isColorSensorFacingFront = false
+        // Facing direction of the color sensor
+        val isColorSensorFacingFront = file.getBoolean("IsColorSensorFacingFront")
 
-        // How far it should go when knocking a jewel off (in inches)
-        const val knockDistance = 3.0
-
-        // How long does it take for the servo to go from up/down to down/up?
-        const val servoDelay = 500
+        // How far to go when knocking a jewel off?
+        val knockDistance = file.getDouble("KnockDistance")
     }
+    val config = Config()
 
     init {
         // Lock the servo upon start
@@ -47,8 +47,8 @@ class AuxJewelKnocker(val telemetry: ITelemetry,
     }
 
     override fun lowerArm() {
-        arm.position = loweredPosition
-        Thread.sleep(servoDelay.toLong())
+        arm.position = config.loweredPosition
+        Thread.sleep(config.servoDelay.toLong())
     }
 
     override fun detect(): AllianceColor? {
@@ -58,8 +58,8 @@ class AuxJewelKnocker(val telemetry: ITelemetry,
         // Allow values to stabilize
         Thread.sleep(600)
 
-        val isBlue = color.blue() > colorThreshold
-        val isRed = color.red() > colorThreshold
+        val isBlue = color.blue() > config.colorThreshold
+        val isRed = color.red() > config.colorThreshold
 
         return when {
             isBlue && !isRed -> AllianceColor.BLUE
@@ -76,14 +76,15 @@ class AuxJewelKnocker(val telemetry: ITelemetry,
     override fun removeJewel(towardDetectedJewel: Boolean) {
         val initialVec = Vector2D(
                 0.0,
-                (if (towardDetectedJewel == isColorSensorFacingFront) 1 else -1) * knockDistance)
+                (if (towardDetectedJewel == config.isColorSensorFacingFront)
+                        1 else -1) * config.knockDistance)
 
         drivetrain.move(initialVec)
         drivetrain.move(initialVec.negate())
     }
 
     override fun raiseArm() {
-        arm.position = raisedPosition
-        Thread.sleep(servoDelay.toLong())
+        arm.position = config.raisedPosition
+        Thread.sleep(config.servoDelay.toLong())
     }
 }

@@ -3,7 +3,7 @@ package org.firstinspires.ftc.teamcode.teleop
 import com.qualcomm.robotcore.eventloop.opmode.OpMode
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp
 import com.qualcomm.robotcore.util.Range
-import org.firstinspires.ftc.teamcode.config.ConfigFile
+import org.firstinspires.ftc.teamcode.config.ConfigUser
 import org.firstinspires.ftc.teamcode.io.Hardware
 import org.locationtech.jts.math.Vector2D
 
@@ -26,16 +26,12 @@ import org.locationtech.jts.math.Vector2D
 class TeleOpMain : OpMode() {
 
     // Configuration values
-    class Config {
-        private val file =
-                ConfigFile("TeleOp/config.properties")
-
+    class Config : ConfigUser("TeleOp/config.properties") {
         val motorPower          = file.getDouble("MotorPower")
         val turnSpeed           = file.getDouble("TurnSpeed")
         val glyphCollectorPower = file.getDouble("GlyphCollectorPower")
         val pourSensitivity     = file.getDouble("PourSensitivity")
         val rectSensitivity     = file.getDouble("RectifierSensitivity")
-
     }
 
     object InputColumns {

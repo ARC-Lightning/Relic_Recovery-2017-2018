@@ -4,6 +4,7 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode
 import org.firstinspires.ftc.robotcore.external.navigation.RelicRecoveryVuMark
 import org.firstinspires.ftc.teamcode.AllianceColor
+import org.firstinspires.ftc.teamcode.config.ConfigUser
 import org.firstinspires.ftc.teamcode.io.Hardware
 
 /**
@@ -25,19 +26,21 @@ import org.firstinspires.ftc.teamcode.io.Hardware
 open class AutonomousBase(val allianceColor: AllianceColor,
                           val isStartingLeft: Boolean) : LinearOpMode() {
 
-    // CONFIGURATIONS
     companion object {
-        val motorPower = 0.9
-        val taskSequence = listOf(
-                "parkInSafeZone"
-                //TODO add "readVuMark",
-        )
-        val runTasksArbitrarily = false
-
         // Statically available properties
         lateinit var alliance: AllianceColor
         var startingLeft: Boolean = true
     }
+
+    class Config : ConfigUser("AutonomousBase/config.properties") {
+
+        val taskSequence = file.getStringList("TaskSequence")
+        val motorPower = file.getDouble("MotorPower")
+
+        val useDecisionMaker = file.getBoolean("UseDecisionMaker")
+    }
+
+    lateinit var config: Config
 
     lateinit var navigator: IAutoNav
     lateinit var vuforia: IVuforia
@@ -56,7 +59,7 @@ open class AutonomousBase(val allianceColor: AllianceColor,
 
         waitForStart()
 
-        if (runTasksArbitrarily) {
+        if (config.useDecisionMaker) {
             Hardware.telemetry.write("Task Decision Model", "Arbitrary")
             while (!decider.isDone && !isStopRequested) {
                 runTask(decider.nextTask()!!)
@@ -64,7 +67,7 @@ open class AutonomousBase(val allianceColor: AllianceColor,
         } else {
             Hardware.telemetry.write("Task Decision Model", "Predefined")
             var useFailsafe = false
-            val seqIt = taskSequence.iterator()
+            val seqIt = config.taskSequence.iterator()
 
             while (seqIt.hasNext() && !isStopRequested) {
                 if (runTask(seqIt.next()) != true) {
@@ -100,7 +103,8 @@ open class AutonomousBase(val allianceColor: AllianceColor,
     private fun initAll(): Boolean {
         try {
             // PRE-INIT - must be above all others
-            Hardware.init(this, motorPower)
+            config = Config()
+            Hardware.init(this, config.motorPower)
 
             with(Hardware) {
                 navigator = AutoNav()

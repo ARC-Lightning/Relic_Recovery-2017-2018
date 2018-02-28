@@ -91,6 +91,16 @@ class ConfigFile(val filename: String) {
                 "getBoolean called on non-boolean ConfigFile value '${this[key]}'")
     }
 
+    /**
+     * Retrieves a list of strings from the file, delimited by commas (","), from the file with the given property key.
+     *
+     * There is no way to detect malformed lists.
+     * @param key The key of the requested value
+     * @returns The requested value
+     */
+    fun getStringList(key: String): List<String> =
+            this[key].split(",")
+
     override fun toString(): String =
             "[ConfigFile $filename (${properties.size} pairs)]"
 }

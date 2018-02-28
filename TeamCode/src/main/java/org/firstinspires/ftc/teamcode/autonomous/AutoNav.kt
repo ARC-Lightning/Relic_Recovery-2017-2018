@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.autonomous
 
 import org.firstinspires.ftc.robotcore.external.navigation.RelicRecoveryVuMark
 import org.firstinspires.ftc.teamcode.AllianceColor
+import org.firstinspires.ftc.teamcode.config.ConfigUser
 import org.firstinspires.ftc.teamcode.io.Hardware
 import org.locationtech.jts.algorithm.Angle
 import org.locationtech.jts.math.Vector2D
@@ -16,11 +17,12 @@ import org.locationtech.jts.math.Vector2D
  */
 class AutoNav : IAutoNav {
 
-    companion object {
+    class Config : ConfigUser("AutoNav/config.properties") {
+
         /**
          * Width between the MIDDLE of the cryptobox columns in inches. 7.63 according to game manual.
          */
-        const val CRYPTOBOX_WIDTH = 7.63
+        val cryptoboxWidth = file.getDouble("CryptoboxWidth")
 
         /**
          * Vector from the starting point to the optimal position to place a glyph in the middle column
@@ -32,7 +34,10 @@ class AutoNav : IAutoNav {
         // Given that the jewel arm is on the left, consider the starting position as the origin, and
         //   positive y as up (in the diagram).
         // This vector will be flipped across the X axis when our alliance color is BLUE.
-        val CRYPTOBOX_POSITION_CORNER = Vector2D(-2.0, 36.0)
+        val cryptoboxPositionCorner = Vector2D(
+                file.getDouble("CryptoboxPositionCornerX"),
+                file.getDouble("CryptoboxPositionCornerY")
+        )
 
         /**
          * Vector from the starting point to the optimal position to place a glyph in the middle column
@@ -44,7 +49,10 @@ class AutoNav : IAutoNav {
         // Given that the jewel arm is on the left, consider the starting position as the origin, and
         //   positive y as up (in the diagram).
         // This vector will be flipped across the X axis when our alliance color is BLUE.
-        val CRYPTOBOX_POSITION_CENTERED = Vector2D(12.0, -26.0)
+        val cryptoboxPositionCentered = Vector2D(
+                file.getDouble("CryptoboxPositionCenteredX"),
+                file.getDouble("CryptoboxPositionCenteredY")
+        )
 
         /**
          * Distance from starting point to the ideal location of dropping the jewel arm.
@@ -52,10 +60,11 @@ class AutoNav : IAutoNav {
          *   will ONLY move VERTICALLY for this distance in inches. In other words, the starting point
          *   is lined up with the white line between the jewels.
          */
-        const val JEWEL_ACCESS_OFFSET = 0.3
-
-        const val DRIVE_POWER = 0.5
+        val jewelAccessOffset = file.getDouble("JewelAccessOffset")
+        val drivePower = file.getDouble("DrivePower")
     }
+
+    private val config = Config()
 
     private val isStartingOnCorner: Boolean
         get() = AutonomousBase.startingLeft == (AutonomousBase.alliance == AllianceColor.RED)
@@ -81,20 +90,20 @@ class AutoNav : IAutoNav {
 
     // Jewel arm on left side (negative x)
     override fun beginJewelKnock() {
-        Hardware.drivetrain.move(Vector2D(-JEWEL_ACCESS_OFFSET, 0.0), DRIVE_POWER)
+        Hardware.drivetrain.move(Vector2D(config.jewelAccessOffset, 0.0), config.drivePower)
     }
 
     override fun endJewelKnock() {
-        Hardware.drivetrain.move(Vector2D(JEWEL_ACCESS_OFFSET, 0.0), DRIVE_POWER)
+        Hardware.drivetrain.move(Vector2D(-config.jewelAccessOffset, 0.0), config.drivePower)
     }
 
     private fun instructionsToCryptoBox(): Pair<Vector2D, Double> {
         return if (isStartingOnCorner)
         // Same rotation for CORNER of both sides
-            finalizeVector(CRYPTOBOX_POSITION_CORNER) to 90.0
+            finalizeVector(config.cryptoboxPositionCorner) to 90.0
         else
         // Red needs to turn 180deg for CENTERED, Blue is lined up already
-            finalizeVector(CRYPTOBOX_POSITION_CENTERED) to
+            finalizeVector(config.cryptoboxPositionCentered) to
                     if (AutonomousBase.alliance == AllianceColor.BLUE) 0.0 else 180.0
     }
 
@@ -106,8 +115,8 @@ class AutoNav : IAutoNav {
 
         // NOTE: The robot MUST face the cryptobox before moving in this vector.
         return Vector2D(when (vuMark) {
-            RelicRecoveryVuMark.LEFT -> -CRYPTOBOX_WIDTH
-            RelicRecoveryVuMark.RIGHT -> CRYPTOBOX_WIDTH
+            RelicRecoveryVuMark.LEFT -> -config.cryptoboxWidth
+            RelicRecoveryVuMark.RIGHT -> config.cryptoboxWidth
             else -> 0.0
         }, 0.0)
     }
@@ -115,18 +124,18 @@ class AutoNav : IAutoNav {
     override fun goToCryptoBox(vuMark: RelicRecoveryVuMark) {
         val (movement, turnDeg) = instructionsToCryptoBox()
         with(Hardware.drivetrain) {
-            move(movement, DRIVE_POWER)
-            turn(Angle.toRadians(turnDeg), DRIVE_POWER)
-            move(instructionsToColumn(vuMark), DRIVE_POWER)
+            move(movement, config.drivePower)
+            turn(Angle.toRadians(turnDeg), config.drivePower)
+            move(instructionsToColumn(vuMark), config.drivePower)
         }
     }
 
     override fun returnFromCryptoBox(vuMark: RelicRecoveryVuMark) {
         val (movement, turnDeg) = instructionsToCryptoBox()
         with(Hardware.drivetrain) {
-            move(instructionsToColumn(vuMark).negate(), DRIVE_POWER)
-            turn(Angle.toRadians(-turnDeg), DRIVE_POWER)
-            move(movement.negate(), DRIVE_POWER)
+            move(instructionsToColumn(vuMark).negate(), config.drivePower)
+            turn(Angle.toRadians(-turnDeg), config.drivePower)
+            move(movement.negate(), config.drivePower)
         }
     }
 }
