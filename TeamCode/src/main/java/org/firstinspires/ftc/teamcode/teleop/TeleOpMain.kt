@@ -74,12 +74,12 @@ class TeleOpMain : OpMode() {
                 drivetrain.actuate(moveVec, moveVec.length() / Math.sqrt(2.0) * config.motorPower,
                         true, turnPower)
 
-                // Bumpers -> rectifier
+                // Triggers -> rectifier
                 glypher.rectifierPos = Range.clip(
                         glypher.rectifierPos + (left_trigger - right_trigger) *
                                 config.rectSensitivity, 0.0, 1.0)
 
-                if (back) {
+                if (right_bumper) {
                     Hardware.knocker.raiseArm()
                 }
 
@@ -95,9 +95,9 @@ class TeleOpMain : OpMode() {
                 fun openCloseBind(close: Boolean, open: Boolean, current: Boolean) =
                         current != (close != open && current != open)
 
-                // Bucket pour -> Right stick y, forward = vertical, backward = laid down
+                // Bucket pour -> Left stick y, forward = vertical, backward = laid down
                 glypher.bucketPourPos = Range.clip(
-                        glypher.bucketPourPos - right_stick_y.toDouble() *
+                        glypher.bucketPourPos - left_stick_y.toDouble() *
                                 config.pourSensitivity, 0.0, 1.0)
 
                 // Collector toggle between idle & pulling in -> A button

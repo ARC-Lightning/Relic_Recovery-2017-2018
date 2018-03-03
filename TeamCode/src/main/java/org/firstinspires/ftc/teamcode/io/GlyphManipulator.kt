@@ -21,7 +21,7 @@ class GlyphManipulator(
         override val glyphRectifiers: Set<Servo>) : IGlyphManipulator {
 
     // CONFIGURATIONS
-    private val config = Config()
+    val config = Config()
     class Config : ConfigUser("GlyphManipulator/config.properties") {
         val rectMax = file.getDouble("RectifierMax")
         val rectMin = file.getDouble("RectifierMin")

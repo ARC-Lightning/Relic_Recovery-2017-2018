@@ -25,6 +25,16 @@ interface IAutoNav {
     fun endJewelKnock()
 
     /**
+     * Moves/turns from the starting position. to the position in which the phone's camera faces the VuMark.
+     */
+    fun beginReadingVuMark()
+
+    /**
+     * Moves/turns from the position in which the phone's camera faces the VuMark to the starting position.
+     */
+    fun endReadingVuMark()
+
+    /**
      * Moves from the starting point to the position in which a glyph may be scored to the given
      * column of the appropriate cryptobox.
      */

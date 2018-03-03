@@ -6,7 +6,12 @@ import com.qualcomm.robotcore.hardware.ColorSensor
 import com.qualcomm.robotcore.hardware.Servo
 
 /**
- * TODO document
+ * Tests the JewelArm and the JewelSensor with no external dependencies.
+ *
+ * @author Michael Peng
+ * For team: 4410 (Lightning)
+ *
+ * FIRST - Gracious Professionalism
  */
 @TeleOp(name = "JewelTest", group = "Pragmaticos")
 class JewelTest : OpMode() {

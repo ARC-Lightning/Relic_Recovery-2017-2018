@@ -33,7 +33,7 @@ interface IJewelKnocker {
 
     /**
      * Moves or turns the robot in a way that knocks off a jewel in the direction specified by the
-     * parameter, then returns to its position before the knock.
+     * parameter, raises the arm, and returns to its position before the knock.
      * Blocks until the arm has finished moving.
      *
      * @param towardDetectedJewel Whether the jewel whose color is detected by color sensor shall be knocked off

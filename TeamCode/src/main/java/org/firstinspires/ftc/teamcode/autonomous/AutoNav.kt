@@ -97,14 +97,19 @@ class AutoNav : IAutoNav {
         Hardware.drivetrain.move(Vector2D(-config.jewelAccessOffset, 0.0), config.drivePower)
     }
 
+    override fun beginReadingVuMark() = Hardware.drivetrain.turn(Math.PI)
+
+    // Turning 180 degrees has the same result regardless of direction of rotation
+    override fun endReadingVuMark() = Hardware.drivetrain.turn(Math.PI)
+
     private fun instructionsToCryptoBox(): Pair<Vector2D, Double> {
         return if (isStartingOnCorner)
         // Same rotation for CORNER of both sides
-            finalizeVector(config.cryptoboxPositionCorner) to 90.0
+            finalizeVector(config.cryptoboxPositionCorner) to 270.0
         else
-        // Red needs to turn 180deg for CENTERED, Blue is lined up already
+        // Red needs to turn 180deg for CENTERED, Red is lined up already
             finalizeVector(config.cryptoboxPositionCentered) to
-                    if (AutonomousBase.alliance == AllianceColor.BLUE) 0.0 else 180.0
+                    if (AutonomousBase.alliance == AllianceColor.RED) 0.0 else 180.0
     }
 
     private fun instructionsToColumn(vuMark: RelicRecoveryVuMark): Vector2D {
@@ -127,6 +132,7 @@ class AutoNav : IAutoNav {
             move(movement, config.drivePower)
             turn(Angle.toRadians(turnDeg), config.drivePower)
             move(instructionsToColumn(vuMark), config.drivePower)
+            // FIXME repetition
         }
     }
 

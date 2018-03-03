@@ -58,8 +58,8 @@ class AuxJewelKnocker(val telemetry: ITelemetry,
         // Allow values to stabilize
         Thread.sleep(600)
 
-        val isBlue = color.blue() > config.colorThreshold
-        val isRed = color.red() > config.colorThreshold
+        val isBlue = color.blue() - color.red() > config.colorThreshold
+        val isRed = color.red() - color.blue() > config.colorThreshold
 
         return when {
             isBlue && !isRed -> AllianceColor.BLUE
@@ -80,6 +80,7 @@ class AuxJewelKnocker(val telemetry: ITelemetry,
                         1 else -1) * config.knockDistance)
 
         drivetrain.move(initialVec)
+        raiseArm()
         drivetrain.move(initialVec.negate())
     }
 

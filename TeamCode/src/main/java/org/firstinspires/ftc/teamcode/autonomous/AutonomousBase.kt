@@ -6,6 +6,8 @@ import org.firstinspires.ftc.robotcore.external.navigation.RelicRecoveryVuMark
 import org.firstinspires.ftc.teamcode.AllianceColor
 import org.firstinspires.ftc.teamcode.config.ConfigUser
 import org.firstinspires.ftc.teamcode.io.Hardware
+import org.locationtech.jts.math.Vector2D
+import java.util.*
 
 /**
  * The base LinearOpMode procedure in which autonomous operation is performed.
@@ -38,6 +40,14 @@ open class AutonomousBase(val allianceColor: AllianceColor,
         val motorPower = file.getDouble("MotorPower")
 
         val useDecisionMaker = file.getBoolean("UseDecisionMaker")
+        val useAutoCelebrator = file.getBoolean("UseAutoCelebrator")
+
+        // Task definition decisions
+        val jewelSenseAttempts = file.getInteger("JewelSenseAttempts")
+        val jewelDisplacementMax = file.getDouble("JewelDisplacementMax")
+        // For how much should it wait for Vuforia to recognize the VuMark? (in ms)
+        val vuMarkTimeout = file.getInteger("VuMarkTimeout")
+        val flywheelPower = file.getDouble("FlywheelPower")
     }
 
     lateinit var config: Config
@@ -86,6 +96,9 @@ open class AutonomousBase(val allianceColor: AllianceColor,
                     }
                 }
             }
+            // We're finished, celebrate if enabled
+            if (config.useAutoCelebrator)
+                AutoCelebrator().begin()
         }
     }
 
@@ -151,23 +164,38 @@ open class AutonomousBase(val allianceColor: AllianceColor,
 
         @Task(priority = 30.0 / 85.0, reliability = 0.75)
         fun knockJewel(opMode: AutonomousBase): Boolean {
+
+            /** Moves the arm for a random amount in either direction, bounded by a configured parameter.*/
+            fun armDisplacement() =
+                    (Random().nextDouble() - 0.5) * 2 * opMode.config.jewelDisplacementMax
+
             with(Hardware.knocker) {
                 opMode.navigator.beginJewelKnock()
 
                 lowerArm()
 
-                val colorDetected = detect()
+                run attempt@ {
+                    repeat(opMode.config.jewelSenseAttempts) { i ->
+                        Hardware.telemetry.write("Knock jewel attempt", (i + 1).toString())
+                        opMode.sleep(1000)
 
-                // If no concrete conclusion arises from the data, fail this task
-                if (colorDetected != null) {
-                    // Knock off the jewel of color opposite to the team we're on
-                    removeJewel(colorDetected != alliance)
+                        val colorDetected = detect()
+
+                        // If no concrete conclusion arises from the data, fail this task
+                        if (colorDetected != null) {
+                            // Knock off the jewel of color opposite to the team we're on
+                            Hardware.telemetry.write("Color detected", colorDetected.toString())
+                            removeJewel(colorDetected != alliance)
+                            return@attempt
+                        }
+                        arm.position += armDisplacement()
+                    }
                 }
 
-                raiseArm()
-
                 opMode.navigator.endJewelKnock()
-                return colorDetected != null
+
+                // Precisely restoring the start position is hopeless. If jewel not removed, give up
+                return true
             }
         }
 
@@ -179,18 +207,28 @@ open class AutonomousBase(val allianceColor: AllianceColor,
             return true
         }
 
-        /*@Task(priority = 30.0 / 85.0, reliability = 0.7)
+        @Task(priority = 30.0 / 85.0, reliability = 0.7)
         fun readVuMark(opMode: AutonomousBase): Boolean {
             with(opMode) {
+                navigator.beginReadingVuMark()
                 vuforia.startTracking()
 
                 // Allow camera to focus
                 opMode.sleep(3000)
 
-                vuMark = vuforia.readVuMark()
+                // Repeat until timeout or recognition
+                val startTime = System.currentTimeMillis()
+                while (System.currentTimeMillis() - startTime < opMode.config.vuMarkTimeout) {
+                    vuMark = vuforia.readVuMark()
+
+                    if (vuMark != null)
+                        break
+
+                }
                 vuforia.stopTracking()
 
                 Hardware.telemetry.write("Read VuMark", vuMark?.name ?: "Failed")
+                navigator.endReadingVuMark()
 
                 // If its representation is known, it's successful
                 return vuMark != RelicRecoveryVuMark.UNKNOWN
@@ -201,12 +239,23 @@ open class AutonomousBase(val allianceColor: AllianceColor,
         fun placeInCryptoBox(opMode: AutonomousBase): Boolean {
             opMode.navigator.goToCryptoBox(opMode.vuMark ?: RelicRecoveryVuMark.CENTER)
 
-            Hardware.glypher.bucketPourPos = IGlyphManipulator.pourMax
-            opMode.sleep(1000)
-            Hardware.glypher.bucketPourPos = IGlyphManipulator.pourMin
+            with (Hardware) {
+                glypher.collectorPower = opMode.config.flywheelPower
+                glypher.bucketPourPos = 1.0
+                opMode.sleep(1000)
+
+                // Shove it just a bit
+                drivetrain.move(Vector2D(0.0, 0.5))
+
+                glypher.bucketPourPos = 0.0
+                glypher.collectorPower = 0.0
+
+                // Remove contact with glyph
+                drivetrain.move(Vector2D(0.0, -1.0))
+            }
 
             return true
-        }*/
+        }
     }
 }
 

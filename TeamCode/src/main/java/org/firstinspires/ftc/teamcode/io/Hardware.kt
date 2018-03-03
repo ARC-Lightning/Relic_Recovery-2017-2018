@@ -26,7 +26,6 @@ object Hardware {
     lateinit var drivetrain: IDrivetrain
     lateinit var telemetry: ITelemetry
     lateinit var glypher: GlyphManipulator
-    // TODO fix usages
     lateinit var knocker: IJewelKnocker
 
     // LATEINIT - OpModes MUST initialize ASAP using this function, otherwise expect NPEs!

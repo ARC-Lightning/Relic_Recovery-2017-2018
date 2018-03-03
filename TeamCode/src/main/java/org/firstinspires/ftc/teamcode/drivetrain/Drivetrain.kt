@@ -270,7 +270,6 @@ class Drivetrain(
             setMotorMode(DcMotor.RunMode.RUN_TO_POSITION)
             setMotorPowers(vector, power)
 
-            // TODO evaluate
             while (this.isBusy);
             stop()
         }

@@ -14,14 +14,13 @@ class RhythmTest : LinearOpMode() {
 
     /* ELECTRONICS */
     lateinit var leftPour: Servo
-    lateinit var rightPour: Servo
     lateinit var leftCollector: DcMotor
     lateinit var rightCollector: DcMotor
 
     companion object {
         /* POSITIONS and POWER */
         const val POUR_DOWN = 0.0
-        const val POUR_UP = 0.4
+        const val POUR_UP = 0.3
         const val COLLECTOR_POWER = 0.5
 
         /* RHYTHM SPEED */
@@ -42,14 +41,12 @@ class RhythmTest : LinearOpMode() {
         // Define electronics
         with(hardwareMap) {
             leftPour = servo.get("BucketPour")
-            rightPour = servo.get("OffsideBucketPour")
 
             leftCollector = dcMotor.get("FlywheelLeft")
             rightCollector = dcMotor.get("FlywheelRight")
         }
 
         // Follow symmetry
-        rightPour.direction = Servo.Direction.REVERSE
         rightCollector.direction = DcMotorSimple.Direction.REVERSE
 
         telemetry.isAutoClear = false
@@ -86,7 +83,6 @@ class RhythmTest : LinearOpMode() {
 
         fun alternate() {
             opMode.leftPour.position = if (isLeftDown) POUR_UP else POUR_DOWN
-            opMode.rightPour.position = if (isLeftDown) POUR_DOWN else POUR_UP
 
             isLeftDown = !isLeftDown
         }
