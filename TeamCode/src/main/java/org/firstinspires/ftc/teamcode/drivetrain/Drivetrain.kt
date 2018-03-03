@@ -221,6 +221,9 @@ class Drivetrain(
             Map<IDrivetrain.MotorPtr, Double> =
             map.entries.map { (pair, power) -> pair.motors.map { it to power } }.flatten().toMap()
 
+    private fun normalizeDoubleCircle(radians: Double): Double =
+        Angle.normalizePositive(Math.abs(radians)) * (if (radians < 0.0) -1 else 1)
+
     /**
      * Moves the robot according to the specified vector in default power.
      * If any motor in the drivetrain is busy when this is called, it will block until no motors are busy.
@@ -364,12 +367,9 @@ class Drivetrain(
 
             // Turn the radians into relative ticks for one side of the drivetrain, then the other side
             //   is the negation of that value.
-            var tickMagnitude = Math.round(Math.abs(Angle.normalize(radians)) / (2 * Math.PI) * config.ticksPerCircularSpin)
+            val tickMagnitude = Math.round(normalizeDoubleCircle(radians) / (2 * Math.PI) * config.ticksPerCircularSpin)
 
-            // tickMagnitude is always applied to the right side because the unit circle is
-            //   counter-clockwise. If the input value is positive, then tickMagnitude shall be negated.
-            if (radians < 0.0)
-                tickMagnitude *= -1
+            // !! Used to negate if below 0.0
 
             // Wait for other motor operations to complete
             while (this.isBusy);

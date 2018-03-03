@@ -45,4 +45,11 @@ interface IGlyphManipulator {
      * UNRECTIFYING_POS represents the position when the rectifier is out of the way.
      */
     var rectifierPos: Double
+
+    // Autonomous-optimized methods
+    /**
+     * Places the glyph into the cryptobox in front in an optimized way.
+     * This method can block if necessary.
+     */
+    fun placeGlyph()
 }

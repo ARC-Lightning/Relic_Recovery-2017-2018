@@ -105,7 +105,7 @@ class AutoNav : IAutoNav {
     private fun instructionsToCryptoBox(): Pair<Vector2D, Double> {
         return if (isStartingOnCorner)
         // Same rotation for CORNER of both sides
-            finalizeVector(config.cryptoboxPositionCorner) to 270.0
+            finalizeVector(config.cryptoboxPositionCorner) to -90.0
         else
         // Red needs to turn 180deg for CENTERED, Red is lined up already
             finalizeVector(config.cryptoboxPositionCentered) to
@@ -129,7 +129,8 @@ class AutoNav : IAutoNav {
     override fun goToCryptoBox(vuMark: RelicRecoveryVuMark) {
         val (movement, turnDeg) = instructionsToCryptoBox()
         with(Hardware.drivetrain) {
-            move(movement, config.drivePower)
+            move(Vector2D(0.0, movement.y), config.drivePower)
+            move(Vector2D(movement.x, 0.0), config.drivePower)
             turn(Angle.toRadians(turnDeg), config.drivePower)
             move(instructionsToColumn(vuMark), config.drivePower)
             // FIXME repetition

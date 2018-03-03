@@ -48,6 +48,8 @@ open class AutonomousBase(val allianceColor: AllianceColor,
         // For how much should it wait for Vuforia to recognize the VuMark? (in ms)
         val vuMarkTimeout = file.getInteger("VuMarkTimeout")
         val flywheelPower = file.getDouble("FlywheelPower")
+        // For how long should it power the motors to shove the glyphs into place? (in ms)
+        val glyphShoveTime = file.getInteger("GlyphShoveTime")
     }
 
     lateinit var config: Config
@@ -97,8 +99,15 @@ open class AutonomousBase(val allianceColor: AllianceColor,
                 }
             }
             // We're finished, celebrate if enabled
-            if (config.useAutoCelebrator)
-                AutoCelebrator().begin()
+            if (config.useAutoCelebrator) {
+                try {
+                    val celebrator = AutoCelebrator()
+                    celebrator.startMusic("celebrate.wav")
+                    celebrator.begin { isStopRequested }
+                } catch (exc: Exception) {
+                    Hardware.telemetry.fatal("Celebration failed: ${exc.message}")
+                }
+            }
         }
     }
 
@@ -203,7 +212,6 @@ open class AutonomousBase(val allianceColor: AllianceColor,
         fun parkInSafeZone(opMode: AutonomousBase): Boolean {
             opMode.navigator.goToCryptoBox(RelicRecoveryVuMark.CENTER)
             opMode.sleep(2000)
-//            opMode.navigator.returnFromCryptoBox(RelicRecoveryVuMark.CENTER)
             return true
         }
 
@@ -237,21 +245,31 @@ open class AutonomousBase(val allianceColor: AllianceColor,
 
         @Task(priority = 15.0 / 85.0, reliability = 0.7)
         fun placeInCryptoBox(opMode: AutonomousBase): Boolean {
-            opMode.navigator.goToCryptoBox(opMode.vuMark ?: RelicRecoveryVuMark.CENTER)
+            fun moveForTime(direction: Vector2D, time: Int) {
+                Hardware.drivetrain.startMove(direction)
+                Thread.sleep(time.toLong())
+                Hardware.drivetrain.stop()
+            }
+
+            opMode.navigator.goToCryptoBox(opMode.vuMark ?: RelicRecoveryVuMark.RIGHT)
 
             with (Hardware) {
                 glypher.collectorPower = opMode.config.flywheelPower
-                glypher.bucketPourPos = 1.0
-                opMode.sleep(1000)
+                glypher.placeGlyph()
+                opMode.sleep(400)
 
                 // Shove it just a bit
                 drivetrain.move(Vector2D(0.0, 0.5))
 
-                glypher.bucketPourPos = 0.0
                 glypher.collectorPower = 0.0
 
                 // Remove contact with glyph
                 drivetrain.move(Vector2D(0.0, -1.0))
+
+                // Shove again
+                moveForTime(Vector2D(0.0, 0.6), opMode.config.glyphShoveTime)
+                moveForTime(Vector2D(0.0, -0.6), 250)
+                glypher.bucketPourPos = 0.0
             }
 
             return true

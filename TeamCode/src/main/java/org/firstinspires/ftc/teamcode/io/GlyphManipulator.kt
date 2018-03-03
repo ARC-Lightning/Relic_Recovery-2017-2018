@@ -29,6 +29,8 @@ class GlyphManipulator(
         val rightCollectorPower = file.getDouble("RightCollectorPower")
         val pourMax = file.getDouble("PourMax")
         val pourMin = file.getDouble("PourMin")
+        val pourTime = file.getInteger("PourTime")
+        val pourIntermediate = file.getDouble("PourIntermediate")
     }
 
 
@@ -81,6 +83,12 @@ class GlyphManipulator(
             _rectifierPos = Range.clip(value, 0.0, 1.0)
             applyState()
         }
+
+    override fun placeGlyph() {
+        bucketPourPos = config.pourIntermediate
+        Thread.sleep((config.pourTime * config.pourIntermediate).toLong() + 100)
+        bucketPourPos = config.pourMax
+    }
 
     // FIXME Redundancy - Factory functions?
     // Furthermore, this pattern can be found in some other hardware devices. It would be ideal to

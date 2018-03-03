@@ -17,7 +17,7 @@ The Lightning Codebase for 2017-2018 FTC Relic Recovery contains many unique fea
 \subsection{Kotlin}
 
 \subsubsection{Definition}
-Kotlin is a programming language that runs on the Java Virtual Machine (JVM) platform. It has been supported by Google as an official language for Android since May 2017. It offers cleaner and more concise syntax, support for multiple programming paradigms \textit{(such as functional)}, and is fully interoperable with Java. It is open source under the Apache 2.0 license. \href{https://developer.android.com/kotlin/index.html}{Click here for Google's introduction to Kotlin.}
+Kotlin is a programming language that runs on the Java Virtual Machine (JVM) platform. It has been supported by Google as an official language for Android since May 2017. It offers cleaner and more concise syntax, support for multiple programming paradigms \textit{(such as functional)}, and is fully interoperable with Java. It is open source under the Apache 2.0 license. Google's introduction to Kotlin is located at: \texttt{https://developer.android.com/kotlin/index.html}
 
 \subsubsection{Comparison with Java}
 % Discuss: lambdas, null safety!, string templates, singletons, data classes, operator overloading, collection mutability (and mutability in general)
@@ -34,7 +34,7 @@ Data classes in Kotlin were designed to address use cases where the only respons
 
 \end{description}
 
-There are many other delightful features in Kotlin that boost developer productivity and satisfaction compared to Java. \href{https://kotlinlang.org/docs/reference/idioms.html}{Click here for some common idioms in Kotlin.}
+There are many other delightful features in Kotlin that boost developer productivity and satisfaction compared to Java. Common idioms in Kotlin are demonstrated at: \texttt{https://kotlinlang.org/docs/reference/idioms.html}
 
 \subsubsection{Low Entry Point}
 
@@ -120,6 +120,11 @@ To support vector-based operations for autonomous, the drivetrain interface acce
 \paragraph{Turning}
 Turning methods rotate the robot in place. Methods designed for autonomous receive the desired angle of rotation in radians of range $-2\pi < n < 2\pi$. Methods designed for TeleOp receive either a boolean denoting direction of rotation or a number denoting the desired turning speed.
 
+% TODO actuation
+
+\subsubsection{Driver Assistance}
+In situations such as lining up with the cryptobox, drivetrain controls can be twitchy and unintuitive. The support for precise drivetrain movement has been deemed advantageous by our drivers, and thus they have been implemented as a mode. When this mode is engaged, all motor power outputs are reduced by a multiplier, thus scaling down the robot's overall velocity.
+
 \subsection{Autonomous}
 Lightning's autonomous routine revolves around the concept of Tasks, of which examples include reading the VuMark, knocking the correct jewel, and placing the preloaded glyph into the intended cryptobox. The \texttt{AutoNav} module is responsible for autonomous navigation, while the \texttt{DecisionMaker} module decides the order in which the tasks are performed.
 
@@ -130,6 +135,12 @@ In addition to automated decision-making, the code also supports a predefined se
 
 \subsubsection{Navigation}
 The overall demand for navigation in this year's autonomous tasks is low, so its implementation is relatively simple. Two adjustable vector parameters represent the location of the jewels and cryptobox columns relative to the starting point, and a column width parameter defines the distance between the loading positions for adjacent cryptobox columns. \texttt{AutoNav} provides functions that move the robot between positions defined by the vectors and the starting point. When the Autonomous period begins, the main routine requests an unfinished task from \texttt{DecisionMaker} to perform, during which the task routines use these \texttt{AutoNav} functions to navigate as necessary.
+
+\subsection{Configuration}
+To reupload the entire Robot Controller app for every parameter tweak has been terribly inefficient in our experience. Each upload takes roughly 1 minute to take place, and this delay greatly reduces the momentum of agile development. To respond to this problem, we have migrated our configurable parameters (discussed above in \textit{D.R.Y.}) to Java Property files in the phone's local storage. Upon the start of any OpMode, the parameters are reloaded from storage. Since uploading configuration files is practically instant, our momentum in rapid development is restored to its full potential. Depending on demand, we may continue to implement scripting for greater efficiency.
+
+\subsubsection{Object-Oriented Model}
+Each module implementation that uses configuration files has a nested class where all parameters are declared as class fields, which are initialized to the values read from storage through module \texttt{ConfigFile}. This module is built with abilities to cast the raw string value to a variety of common data types, including \texttt{double}, \texttt{int}, and \texttt{boolean}.
 
 %\subsection{I/O Subsystems}
 %Each physical subsystem on the robot corresponds to a dedicated module in the codebase, which contains references to I/O devices (\texttt{DcMotor}, \texttt{Servo}, etc.), initialization procedures, configurable parameters, and public functions that provide abstraction in manipulating the subsystem's devices. These functions enhance readability in other modules. These I/O subsystems assume full responsibility of the operation of their declared hardware devices, which eases maintenance. The following subsections describe each I/O subsystem in detail.

@@ -1,7 +1,10 @@
 package org.firstinspires.ftc.teamcode.autonomous
 
+import android.media.MediaPlayer
+import org.firstinspires.ftc.teamcode.config.ConfigFile
 import org.firstinspires.ftc.teamcode.config.ConfigUser
 import org.firstinspires.ftc.teamcode.io.Hardware
+import java.io.File
 
 /**
  * Don't you think the robot enjoys having the belief that it finished all the enabled tasks?
@@ -22,6 +25,7 @@ class AutoCelebrator {
     }
     private val config = Config()
     private val pour = Hardware.glypher.bucketPour
+    private val media = MediaPlayer()
 
     init {
         with (Hardware.telemetry) {
@@ -50,9 +54,21 @@ class AutoCelebrator {
         while (System.currentTimeMillis() - startTime < time);
     }
 
-    fun begin() {
+    fun startMusic(name: String) {
+        media.setDataSource(ConfigFile.CONFIG_PATH + File.pathSeparator + name)
+        media.prepare()
+        media.start()
+    }
+
+    fun stopMusic() =
+        media.stop()
+
+    fun begin(isStopRequested: () -> Boolean) = run block@ {
         config.pourRhythm.forEach { beat ->
             playNote(60_000 / config.BPM * beat)
+            if (isStopRequested()) {
+                return@block
+            }
         }
     }
 }
